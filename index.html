@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>PyIDE Pro - Python with Folders</title>
     
-    <!-- External Libraries -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/dracula.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/hint/show-hint.min.css">
     
     <style>
         :root {
@@ -448,6 +448,34 @@
             color: var(--text-primary);
         }
 
+        /* Naya: Mobile Tools Style */
+        .mobile-tools {
+            display: flex;
+            background: var(--bg-panel);
+            border-bottom: 1px solid var(--border);
+            overflow-x: auto;
+            padding: 6px;
+            gap: 6px;
+            scrollbar-width: none;
+        }
+        .mobile-tools::-webkit-scrollbar { display: none; }
+        .tool-btn {
+            flex-shrink: 0;
+            height: 34px;
+            min-width: 38px;
+            background: var(--bg-hover);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-family: 'SF Mono', monospace;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        .tool-btn:active { background: var(--accent); color: white; }
+
         .editor-container {
             flex: 1;
             overflow: hidden;
@@ -738,7 +766,6 @@
 </head>
 <body>
 
-    <!-- Splash Screen -->
     <div id="splash">
         <div class="splash-content">
             <div class="splash-icon">
@@ -752,12 +779,9 @@
         </div>
     </div>
 
-    <!-- Sidebar Overlay (Mobile) -->
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-    <!-- Main App -->
     <div id="app">
-        <!-- Header -->
         <header class="header">
             <div class="header-left">
                 <button class="btn btn-icon" onclick="toggleSidebar()" id="menuBtn">
@@ -782,9 +806,7 @@
             </div>
         </header>
 
-        <!-- Content -->
         <div class="content">
-            <!-- Sidebar -->
             <aside class="sidebar" id="sidebar">
                 <div class="sidebar-header">
                     <div class="sidebar-title">
@@ -797,12 +819,10 @@
                 </div>
                 
                 <div class="sidebar-content">
-                    <!-- Breadcrumb -->
                     <div class="breadcrumb" id="breadcrumb">
                         <span class="breadcrumb-item" onclick="goToRoot()">Root</span>
                     </div>
 
-                    <!-- Actions -->
                     <div class="action-grid">
                         <button class="action-btn" onclick="showNewFolderModal()">
                             <i class="fas fa-folder-plus"></i>
@@ -814,14 +834,11 @@
                         </button>
                     </div>
 
-                    <!-- Items List -->
                     <div id="itemsList">
-                        <!-- Folders and files loaded here -->
-                    </div>
+                        </div>
                 </div>
             </aside>
 
-            <!-- Editor Area -->
             <div class="editor-area">
                 <div class="toolbar">
                     <div class="toolbar-left">
@@ -838,11 +855,25 @@
                     <span style="color: var(--text-secondary); font-size: 12px;" id="cursorPos">Ln 1, Col 1</span>
                 </div>
                 
+                <div class="mobile-tools">
+                    <button class="tool-btn" onclick="insertChar('\t')">Tab</button>
+                    <button class="tool-btn" onclick="insertChar(':')">:</button>
+                    <button class="tool-btn" onclick="insertChar('(')">(</button>
+                    <button class="tool-btn" onclick="insertChar(')')">)</button>
+                    <button class="tool-btn" onclick="insertChar('[')">[</button>
+                    <button class="tool-btn" onclick="insertChar(']')">]</button>
+                    <button class="tool-btn" onclick="insertChar('{')">{</button>
+                    <button class="tool-btn" onclick="insertChar('}')">}</button>
+                    <button class="tool-btn" onclick="insertChar('\'')">'</button>
+                    <button class="tool-btn" onclick="insertChar('\"')">"</button>
+                    <button class="tool-btn" onclick="insertChar('=')">=</button>
+                    <button class="tool-btn" onclick="insertChar(',')">,</button>
+                </div>
+                
                 <div class="editor-container" id="editorContainer"></div>
             </div>
         </div>
 
-        <!-- Output Panel -->
         <div class="output-panel" id="outputPanel">
             <div class="output-header">
                 <div class="output-tabs">
@@ -874,14 +905,13 @@
                         <h4 style="color: var(--accent); margin: 20px 0 10px;">Tips</h4>
                         <p>• Tap folder to open it</p>
                         <p>• Long press file to delete</p>
-                        <p• Use breadcrumb to go back</p>
+                        <p>• Use breadcrumb to go back</p>
                         <p>• Auto-save every 30 seconds</p>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Bottom Nav (Mobile) -->
         <nav class="bottom-nav">
             <div class="nav-item active" onclick="setView('editor')">
                 <i class="fas fa-code"></i>
@@ -898,7 +928,6 @@
         </nav>
     </div>
 
-    <!-- New Folder Modal -->
     <div class="modal-overlay" id="newFolderModal">
         <div class="modal-sheet">
             <div class="modal-title">
@@ -913,7 +942,6 @@
         </div>
     </div>
 
-    <!-- New File Modal -->
     <div class="modal-overlay" id="newFileModal">
         <div class="modal-sheet">
             <div class="modal-title">
@@ -928,13 +956,14 @@
         </div>
     </div>
 
-    <!-- Toast Container -->
     <div class="toast-container" id="toastContainer"></div>
 
-    <!-- Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/python/python.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/edit/closebrackets.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/hint/show-hint.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/hint/python-hint.min.js"></script>
+    
     <script src="https://cdn.jsdelivr.net/npm/skulpt@1.2.0/dist/skulpt.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/skulpt@1.2.0/dist/skulpt-stdlib.js"></script>
 
@@ -1127,6 +1156,7 @@
                 autoCloseBrackets: true,
                 lineWrapping: true,
                 extraKeys: {
+                    "Ctrl-Space": "autocomplete", // Added autocomplete shortcut
                     'Tab': (cm) => {
                         if (cm.somethingSelected()) {
                             cm.indentSelection('add');
@@ -1134,6 +1164,13 @@
                             cm.replaceSelection('    ');
                         }
                     }
+                }
+            });
+
+            // Naya: Auto-suggest when typing
+            editor.on("inputRead", function(cm, change) {
+                if (change.text[0].match(/[a-z]/i)) {
+                    cm.showHint({hint: CodeMirror.hint.python, completeSingle: false});
                 }
             });
 
@@ -1173,9 +1210,18 @@
                 fs.openFile(firstFile.name);
             } else {
                 // Create default file
-                fs.createFile('main.py', '# Welcome to PyIDE Pro!\n# Create folders to organize your files\n\nprint("Hello, World!")');
+                fs.createFile('main.py', '# Welcome to PyIDE Pro!\n# Create folders to organize your files\n\nimport math\nprint("Pi value is:", math.pi)');
                 fs.openFile('main.py');
             }
+        }
+
+        // Naya: Mobile Char Insertion
+        function insertChar(char) {
+            if (!editor) return;
+            const doc = editor.getDoc();
+            const cursor = doc.getCursor();
+            doc.replaceRange(char, cursor);
+            editor.focus();
         }
 
         function saveFile() {
@@ -1232,6 +1278,12 @@
         function initPython() {
             Sk.configure({
                 output: (text) => appendConsole(text, 'output'),
+                // Naya: Added 'read' to support standard libraries like math, random
+                read: (x) => {
+                    if (Sk.builtinFiles === undefined || Sk.builtinFiles["files"][x] === undefined)
+                        throw "File not found: '" + x + "'";
+                    return Sk.builtinFiles["files"][x];
+                },
                 inputfun: (prompt) => {
                     return new Promise((resolve) => {
                         appendConsole(prompt, 'info');
@@ -1463,7 +1515,7 @@
         // Tabs
         function switchTab(tab) {
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            event.target.classList.add('active');
+            if (event) event.target.classList.add('active');
             
             document.getElementById('consoleView').style.display = tab === 'console' ? 'block' : 'none';
             document.getElementById('helpView').style.display = tab === 'help' ? 'block' : 'none';
@@ -1476,7 +1528,8 @@
             // Update nav
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
             if (panel.classList.contains('open')) {
-                event.target.closest('.nav-item').classList.add('active');
+                const termBtn = document.querySelector('.bottom-nav .nav-item:last-child');
+                if (termBtn) termBtn.classList.add('active');
             } else {
                 document.querySelector('.nav-item:first-child').classList.add('active');
             }
@@ -1484,7 +1537,7 @@
 
         function setView(view) {
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            event.target.closest('.nav-item').classList.add('active');
+            if (event) event.target.closest('.nav-item').classList.add('active');
             
             if (view === 'files') {
                 toggleSidebar();
