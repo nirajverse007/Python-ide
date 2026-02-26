@@ -2,7 +2,9 @@
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
     <title>PyIDE Pro - Python with Folders</title>
     
     <!-- CodeMirror CSS -->
@@ -35,8 +37,9 @@
             --header-h: 56px;
             --nav-h: 64px;
             --toolbar-h: 44px;
-            --mobile-tools-h: 40px;
+            --mobile-tools-h: 50px;
             --radius: 12px;
+            --keyboard-height: 0px;
         }
 
         /* Light Theme Variables */
@@ -90,17 +93,6 @@
             0% { background-position: 0% 50%; }
             50% { background-position: 100% 50%; }
             100% { background-position: 0% 50%; }
-        }
-
-        /* Glassmorphism */
-        .glass {
-            background: rgba(30, 41, 59, 0.8);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-        }
-
-        [data-theme="light"] .glass {
-            background: rgba(255, 255, 255, 0.8);
         }
 
         /* Splash Screen */
@@ -174,6 +166,7 @@
             display: none;
             flex-direction: column;
             height: 100vh;
+            height: 100dvh; /* Dynamic viewport height for mobile */
         }
 
         #app.active {
@@ -565,16 +558,17 @@
             border-color: var(--accent);
         }
 
-        /* Mobile Tools - Fixed above keyboard */
+        /* Mobile Tools - FIXED POSITION ABOVE KEYBOARD */
         .mobile-tools-container {
             position: fixed;
             bottom: 0;
             left: 0;
             right: 0;
-            z-index: 1000;
+            z-index: 2147483647; /* Max z-index */
             background: var(--bg-panel);
             border-top: 1px solid var(--border);
-            transition: transform 0.3s ease;
+            transition: transform 0.3s ease, bottom 0.3s ease;
+            transform: translateY(0);
         }
 
         .mobile-tools {
@@ -633,6 +627,12 @@
         .tool-btn.bracket:active {
             background: #fbbf24;
             color: var(--bg-dark);
+        }
+
+        /* KEYBOARD OPEN STATE - TOOLBAR UPAR AAYEGA */
+        .keyboard-open .mobile-tools-container {
+            bottom: var(--keyboard-height, 45vh);
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.5);
         }
 
         .editor-container {
@@ -797,6 +797,7 @@
             justify-content: space-around;
             align-items: center;
             padding: 0 20px;
+            transition: transform 0.3s ease;
         }
 
         @media (max-width: 768px) {
@@ -819,12 +820,9 @@
                 transform: translateY(0);
             }
 
-            /* Mobile tools adjustment when keyboard opens */
-            .keyboard-open .mobile-tools-container {
-                position: fixed;
-                bottom: 0;
-                left: 0;
-                right: 0;
+            /* Keyboard open hone pe bottom nav hide karo */
+            .keyboard-open .bottom-nav {
+                transform: translateY(100%);
             }
         }
 
@@ -1208,18 +1206,26 @@
             bottom: 0;
             left: 0;
             right: 0;
+            z-index: 99999;
         }
 
         .exit-zen-btn {
             position: fixed;
             top: 20px;
             right: 20px;
-            z-index: 10000;
+            z-index: 100000;
             display: none;
         }
 
         .zen-mode .exit-zen-btn {
             display: flex;
+        }
+
+        /* GitHub Pages Fix - Visual Viewport */
+        @supports (height: 100dvh) {
+            #app {
+                height: 100dvh;
+            }
         }
     </style>
 </head>
@@ -1466,7 +1472,7 @@
         </nav>
     </div>
 
-    <!-- Mobile Tools Toolbar - Fixed above keyboard -->
+    <!-- Mobile Tools Toolbar - FIXED ABOVE KEYBOARD -->
     <div class="mobile-tools-container" id="mobileToolsContainer">
         <div class="mobile-tools" id="mobileTools">
             <!-- Brackets -->
@@ -1601,7 +1607,7 @@
 
             load() {
                 try {
-                    const data = localStorage.getItem('pyide_fs_v3');
+                    const data = localStorage.getItem('pyide_fs_v4');
                     return data ? JSON.parse(data) : null;
                 } catch(e) {
                     return null;
@@ -1610,7 +1616,7 @@
 
             save() {
                 try {
-                    localStorage.setItem('pyide_fs_v3', JSON.stringify(this.root));
+                    localStorage.setItem('pyide_fs_v4', JSON.stringify(this.root));
                     return true;
                 } catch(e) {
                     showToast('Storage full!', 'error');
@@ -2000,32 +2006,81 @@
                 fs.openFile('main.py');
             }
 
-            // Keyboard detection for mobile
+            // Setup keyboard detection
             setupKeyboardDetection();
         }
 
+        // ==================== KEYBOARD DETECTION (GITHUB PAGES FIX) ====================
         function setupKeyboardDetection() {
-            const originalHeight = window.innerHeight;
+            const tools = document.getElementById('mobileToolsContainer');
+            let keyboardHeight = 0;
             
-            window.addEventListener('resize', () => {
-                const currentHeight = window.innerHeight;
-                const heightDiff = originalHeight - currentHeight;
+            // Method 1: Visual Viewport API (Modern browsers)
+            if (window.visualViewport) {
+                window.visualViewport.addEventListener('resize', () => {
+                    const vv = window.visualViewport;
+                    const heightDiff = window.innerHeight - vv.height;
+                    
+                    if (heightDiff > 100) {
+                        // Keyboard is open
+                        keyboardHeight = heightDiff;
+                        document.body.classList.add('keyboard-open');
+                        
+                        // Set CSS variable for keyboard height
+                        document.documentElement.style.setProperty('--keyboard-height', heightDiff + 'px');
+                        
+                        // Position toolbar above keyboard
+                        tools.style.bottom = heightDiff + 'px';
+                        tools.style.transform = 'translateY(0)';
+                    } else {
+                        // Keyboard is closed
+                        document.body.classList.remove('keyboard-open');
+                        tools.style.bottom = '0';
+                        tools.style.transform = 'translateY(0)';
+                    }
+                });
+            } else {
+                // Method 2: Fallback for old browsers
+                let originalHeight = window.innerHeight;
                 
-                // If height reduced significantly, keyboard is likely open
-                if (heightDiff > 150) {
-                    document.body.classList.add('keyboard-open');
-                    // Adjust mobile tools position
-                    const tools = document.getElementById('mobileToolsContainer');
-                    tools.style.position = 'fixed';
-                    tools.style.bottom = '0';
-                } else {
-                    document.body.classList.remove('keyboard-open');
-                }
-            });
-
-            // Focus detection
+                window.addEventListener('resize', () => {
+                    const heightDiff = originalHeight - window.innerHeight;
+                    
+                    if (heightDiff > 100) {
+                        document.body.classList.add('keyboard-open');
+                        document.documentElement.style.setProperty('--keyboard-height', '45vh');
+                        tools.style.bottom = '45vh';
+                    } else {
+                        document.body.classList.remove('keyboard-open');
+                        tools.style.bottom = '0';
+                    }
+                });
+            }
+            
+            // Method 3: Focus-based detection (Backup)
             editor.on('focus', () => {
-                document.body.classList.add('keyboard-open');
+                setTimeout(() => {
+                    if (window.visualViewport) {
+                        const heightDiff = window.innerHeight - window.visualViewport.height;
+                        if (heightDiff > 100) {
+                            document.body.classList.add('keyboard-open');
+                            document.documentElement.style.setProperty('--keyboard-height', heightDiff + 'px');
+                            tools.style.bottom = heightDiff + 'px';
+                        }
+                    }
+                }, 300);
+            });
+            
+            editor.on('blur', () => {
+                setTimeout(() => {
+                    document.body.classList.remove('keyboard-open');
+                    tools.style.bottom = '0';
+                }, 100);
+            });
+            
+            // Method 4: Click on editor container
+            document.getElementById('editorContainer').addEventListener('click', () => {
+                editor.focus();
             });
         }
 
