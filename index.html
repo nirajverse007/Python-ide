@@ -3,19 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PyIDE Mobile - Python IDE</title>
+    <title>PyIDE Pro - Python with Folders</title>
     
     <!-- External Libraries -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/dracula.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/eclipse.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        /* ==================== ROOT VARIABLES ==================== */
         :root {
             --primary: #3776ab;
-            --primary-dark: #2d5f8a;
             --secondary: #ffd43b;
             --success: #22c55e;
             --error: #ef4444;
@@ -25,25 +22,14 @@
             --bg-dark: #0f172a;
             --bg-panel: #1e293b;
             --bg-hover: #334155;
-            --text-primary: #f1f5f9;
+            --text-primary: #f8fafc;
             --text-secondary: #94a3b8;
-            --border: #334155;
+            --border: #475569;
             --accent: #60a5fa;
             
             --header-h: 56px;
-            --bottom-nav-h: 64px;
-            --radius: 16px;
-            --shadow: 0 4px 6px -1px rgba(0,0,0,0.3);
-        }
-
-        [data-theme="light"] {
-            --bg-dark: #ffffff;
-            --bg-panel: #f8fafc;
-            --bg-hover: #e2e8f0;
-            --text-primary: #0f172a;
-            --text-secondary: #64748b;
-            --border: #cbd5e1;
-            --accent: #2563eb;
+            --nav-h: 64px;
+            --radius: 12px;
         }
 
         * {
@@ -51,7 +37,6 @@
             padding: 0;
             box-sizing: border-box;
             -webkit-tap-highlight-color: transparent;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
 
         html, body {
@@ -59,56 +44,65 @@
             overflow: hidden;
             background: var(--bg-dark);
             color: var(--text-primary);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
 
-        /* ==================== SPLASH SCREEN ==================== */
+        /* Splash Screen */
         #splash {
             position: fixed;
             inset: 0;
-            background: linear-gradient(135deg, #3776ab 0%, #1e3a5f 100%);
+            background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%);
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             z-index: 10000;
-            transition: opacity 0.5s;
+        }
+
+        .splash-content {
+            text-align: center;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .splash-icon {
-            font-size: 100px;
+            font-size: 80px;
             color: var(--secondary);
-            animation: pulse 2s infinite;
-            filter: drop-shadow(0 10px 30px rgba(0,0,0,0.3));
+            margin-bottom: 20px;
+            animation: bounce 2s infinite;
         }
 
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
         }
 
         .splash h1 {
-            color: white;
-            font-size: 36px;
-            margin-top: 24px;
+            font-size: 32px;
             font-weight: 800;
+            margin-bottom: 8px;
         }
 
         .splash p {
-            color: rgba(255,255,255,0.8);
-            margin-top: 8px;
+            color: var(--text-secondary);
             font-size: 16px;
+            margin-bottom: 30px;
         }
 
-        .splash-loader {
+        .loading-bar {
             width: 200px;
             height: 4px;
             background: rgba(255,255,255,0.2);
             border-radius: 2px;
-            margin-top: 40px;
             overflow: hidden;
+            margin: 0 auto;
         }
 
-        .splash-bar {
+        .loading-progress {
             height: 100%;
             width: 0%;
             background: var(--secondary);
@@ -119,7 +113,7 @@
             to { width: 100%; }
         }
 
-        /* ==================== MAIN APP ==================== */
+        /* Main App */
         #app {
             display: none;
             flex-direction: column;
@@ -130,17 +124,16 @@
             display: flex;
         }
 
-        /* ==================== HEADER ==================== */
-        .app-header {
+        /* Header */
+        .header {
             height: var(--header-h);
             background: var(--bg-panel);
             border-bottom: 1px solid var(--border);
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 16px;
-            position: relative;
-            z-index: 100;
+            padding: 0 12px;
+            flex-shrink: 0;
         }
 
         .header-left, .header-right {
@@ -153,37 +146,33 @@
             position: absolute;
             left: 50%;
             transform: translateX(-50%);
-            display: flex;
-            align-items: center;
-            gap: 8px;
             font-weight: 600;
-            font-size: 16px;
--weight: 600;
-            font-size: 16px;
+            font-size: 15px;
             max-width: 40%;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
 
         .header-title i {
             color: var(--secondary);
         }
 
-        .unsaved-indicator {
+        .unsaved {
             color: var(--secondary);
-            font-size: 20px;
             display: none;
         }
 
-        .unsaved-indicator.show {
+        .unsaved.show {
             display: inline;
         }
 
-        /* Buttons */
         .btn {
             height: 40px;
-            padding: 0 16px;
+            padding: 0 14px;
             border: none;
             border-radius: 10px;
             background: var(--bg-hover);
@@ -193,7 +182,7 @@
             align-items: center;
             justify-content: center;
             gap: 6px;
-            transition: all 0.2s;
+            cursor: pointer;
         }
 
         .btn:active {
@@ -211,23 +200,220 @@
             background: var(--success);
             color: white;
             font-weight: 600;
-            box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
         }
 
-        .btn-primary:active {
-            background: #16a34a;
-        }
-
-        /* ==================== EDITOR SECTION ==================== */
-        .editor-section {
+        /* Content Area */
+        .content {
             flex: 1;
             display: flex;
+            overflow: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 100%;
+            max-width: 360px;
+            background: var(--bg-panel);
+            border-right: 1px solid var(--border);
+            display: flex;
             flex-direction: column;
-            min-height: 0;
             position: relative;
         }
 
-        .editor-toolbar {
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                left: 0;
+                top: 0;
+                bottom: 0;
+                z-index: 200;
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+            
+            .sidebar.open {
+                transform: translateX(0);
+            }
+        }
+
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 199;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar-overlay.show {
+                display: block;
+            }
+        }
+
+        .sidebar-header {
+            height: var(--header-h);
+            background: var(--bg-dark);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+        }
+
+        .sidebar-title {
+            font-size: 18px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sidebar-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+        }
+
+        /* Breadcrumb */
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 16px;
+            padding: 8px 12px;
+            background: var(--bg-dark);
+            border-radius: 8px;
+            font-size: 13px;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+
+        .breadcrumb-item {
+            color: var(--accent);
+            cursor: pointer;
+        }
+
+        .breadcrumb-item:hover {
+            text-decoration: underline;
+        }
+
+        .breadcrumb-separator {
+            color: var(--text-secondary);
+        }
+
+        /* Action Buttons */
+        .action-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .action-btn {
+            padding: 14px;
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-size: 13px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+        }
+
+        .action-btn:active {
+            background: var(--bg-hover);
+        }
+
+        .action-btn i {
+            font-size: 20px;
+            color: var(--accent);
+        }
+
+        /* Folder/File List */
+        .item-list {
+            list-style: none;
+        }
+
+        .item-card {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px;
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .item-card:active {
+            transform: scale(0.98);
+        }
+
+        .item-card.active {
+            border-color: var(--accent);
+            background: rgba(96, 165, 250, 0.1);
+        }
+
+        .item-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .item-icon.folder {
+            background: rgba(251, 191, 36, 0.2);
+            color: #fbbf24;
+        }
+
+        .item-icon.file {
+            background: rgba(96, 165, 250, 0.2);
+            color: var(--accent);
+        }
+
+        .item-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .item-name {
+            font-weight: 600;
+            font-size: 14px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .item-meta {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+
+        .item-menu {
+            padding: 8px;
+            color: var(--text-secondary);
+            cursor: pointer;
+        }
+
+        /* Editor Area */
+        .editor-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+        .toolbar {
             height: 44px;
             background: var(--bg-panel);
             border-bottom: 1px solid var(--border);
@@ -235,9 +421,10 @@
             align-items: center;
             justify-content: space-between;
             padding: 0 12px;
+            flex-shrink: 0;
         }
 
-        .toolbar-group {
+        .toolbar-left {
             display: flex;
             gap: 8px;
         }
@@ -252,7 +439,13 @@
             font-size: 12px;
             display: flex;
             align-items: center;
-            gap: 4px;
+            gap: 6px;
+            cursor: pointer;
+        }
+
+        .toolbar-btn:active {
+            background: var(--bg-hover);
+            color: var(--text-primary);
         }
 
         .editor-container {
@@ -260,56 +453,33 @@
             overflow: hidden;
         }
 
-        /* CodeMirror */
         .CodeMirror {
             height: 100%;
-            font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+            font-family: 'SF Mono', Monaco, monospace;
             font-size: 15px;
             line-height: 1.6;
             background: var(--bg-dark) !important;
         }
 
-        .CodeMirror-gutters {
-            background: var(--bg-panel) !important;
-            border-right: 1px solid var(--border) !important;
-        }
-
-        .CodeMirror-linenumber {
-            color: var(--text-secondary) !important;
-            font-size: 12px;
-        }
-
-        .CodeMirror-cursor {
-            border-left: 2px solid var(--accent) !important;
-        }
-
-        .cm-s-dracula .CodeMirror-activeline-background {
-            background: rgba(255,255,255,0.05) !important;
-        }
-
-        /* ==================== OUTPUT PANEL ==================== */
+        /* Output Panel */
         .output-panel {
-            height: 0;
-            min-height: 0;
+            height: 200px;
+            min-height: 150px;
+            max-height: 50%;
             background: var(--bg-panel);
             border-top: 1px solid var(--border);
             display: flex;
             flex-direction: column;
-            transition: height 0.3s ease;
-            overflow: hidden;
-        }
-
-        .output-panel.open {
-            height: 35vh;
-            min-height: 200px;
+            resize: vertical;
+            overflow: auto;
         }
 
         .output-header {
-            height: 44px;
+            height: 40px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 16px;
+            padding: 0 12px;
             border-bottom: 1px solid var(--border);
             background: var(--bg-dark);
         }
@@ -319,20 +489,18 @@
             gap: 4px;
         }
 
-        .tab-btn {
-            height: 32px;
+        .tab {
+            height: 28px;
             padding: 0 12px;
             background: transparent;
             border: none;
             border-radius: 6px;
             color: var(--text-secondary);
-            font-size: 13px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
+            font-size: 12px;
+            cursor: pointer;
         }
 
-        .tab-btn.active {
+        .tab.active {
             background: var(--bg-hover);
             color: var(--accent);
         }
@@ -343,50 +511,33 @@
             padding: 12px;
         }
 
-        .console-output {
-            font-family: 'SF Mono', monospace;
-            font-size: 13px;
-            line-height: 1.6;
-        }
-
         .console-line {
+            font-family: monospace;
+            font-size: 13px;
             margin: 4px 0;
-            padding: 4px 0;
-            word-wrap: break-word;
+            line-height: 1.5;
         }
 
-        .console-line.error {
-            color: var(--error);
-            background: rgba(239, 68, 68, 0.1);
-            padding: 8px;
-            border-radius: 6px;
-            border-left: 3px solid var(--error);
-        }
+        .console-line.error { color: var(--error); }
+        .console-line.success { color: var(--success); }
+        .console-line.info { color: var(--accent); }
 
-        .console-line.success {
-            color: var(--success);
-        }
-
-        .console-line.info {
-            color: var(--accent);
-        }
-
-        .console-input-area {
+        .console-input-wrapper {
             display: flex;
             align-items: center;
             gap: 8px;
             margin-top: 12px;
-            padding: 12px;
+            padding: 10px;
             background: var(--bg-dark);
             border-radius: 8px;
         }
 
-        .prompt {
+        .console-input-wrapper .prompt {
             color: var(--success);
             font-weight: bold;
         }
 
-        #console-input {
+        #consoleInput {
             flex: 1;
             background: transparent;
             border: none;
@@ -396,36 +547,36 @@
             outline: none;
         }
 
-        /* Help Content */
-        .help-content {
-            color: var(--text-secondary);
-            line-height: 1.8;
-        }
-
-        .help-content h4 {
-            color: var(--accent);
-            margin: 16px 0 8px;
-            font-size: 14px;
-        }
-
-        .help-content code {
-            background: var(--bg-dark);
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-family: monospace;
-            font-size: 12px;
-            color: var(--secondary);
-        }
-
-        /* ==================== BOTTOM NAVIGATION ==================== */
+        /* Bottom Nav (Mobile Only) */
         .bottom-nav {
-            height: var(--bottom-nav-h);
+            display: none;
+            height: var(--nav-h);
             background: var(--bg-panel);
             border-top: 1px solid var(--border);
-            display: flex;
             justify-content: space-around;
             align-items: center;
             padding: 0 20px;
+        }
+
+        @media (max-width: 768px) {
+            .bottom-nav {
+                display: flex;
+            }
+            
+            .output-panel {
+                position: fixed;
+                left: 0;
+                right: 0;
+                bottom: var(--nav-h);
+                height: 40vh;
+                z-index: 100;
+                transform: translateY(100%);
+                transition: transform 0.3s ease;
+            }
+            
+            .output-panel.open {
+                transform: translateY(0);
+            }
         }
 
         .nav-item {
@@ -437,7 +588,7 @@
             font-size: 11px;
             padding: 8px 16px;
             border-radius: 12px;
-            transition: all 0.2s;
+            cursor: pointer;
         }
 
         .nav-item i {
@@ -449,199 +600,19 @@
             background: var(--bg-hover);
         }
 
-        /* ==================== SIDEBAR ==================== */
-        .sidebar-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.5);
-            backdrop-filter: blur(4px);
-            z-index: 200;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s;
-        }
-
-        .sidebar-overlay.show {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .sidebar {
-            position: fixed;
-            left: 0;
-            top: 0;
-            bottom: 0;
-            width: 85%;
-            max-width: 340px;
-            background: var(--bg-panel);
-            z-index: 300;
-            transform: translateX(-100%);
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            display: flex;
-            flex-direction: column;
-            box-shadow: 4px 0 24px rgba(0,0,0,0.4);
-        }
-
-        .sidebar.show {
-            transform: translateX(0);
-        }
-
-        .sidebar-header {
-            height: var(--header-h);
-            background: var(--bg-dark);
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 16px;
-        }
-
-        .sidebar-title {
-            font-size: 20px;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .sidebar-content {
-            flex: 1;
-            overflow-y: auto;
-            padding: 20px;
-        }
-
-        .new-file-card {
-            background: linear-gradient(135deg, var(--accent), var(--primary));
-            color: white;
-            padding: 16px;
-            border-radius: var(--radius);
-            margin-bottom: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            font-weight: 600;
-            box-shadow: var(--shadow);
-        }
-
-        .new-file-card:active {
-            transform: scale(0.98);
-            opacity: 0.9;
-        }
-
-        .section-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 12px;
-            color: var(--text-secondary);
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            font-weight: 600;
-        }
-
-        .file-list {
-            list-style: none;
-        }
-
-        .file-card {
-            background: var(--bg-dark);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 14px;
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .file-card:active {
-            transform: scale(0.98);
-        }
-
-        .file-card.active {
-            border-color: var(--accent);
-            background: rgba(96, 165, 250, 0.1);
-        }
-
-        .file-icon {
-            width: 40px;
-            height: 40px;
-            background: rgba(255, 215, 59, 0.1);
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--secondary);
-            font-size: 20px;
-        }
-
-        .file-info {
-            flex: 1;
-            overflow: hidden;
-        }
-
-        .file-name {
-            font-weight: 600;
-            font-size: 15px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .file-date {
-            font-size: 12px;
-            color: var(--text-secondary);
-            margin-top: 2px;
-        }
-
-        .file-menu {
-            color: var(--text-secondary);
-            padding: 8px;
-        }
-
-        /* Libraries */
-        .libs-grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-top: 8px;
-        }
-
-        .lib-chip {
-            padding: 6px 12px;
-            background: var(--bg-dark);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            font-size: 12px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            color: var(--text-secondary);
-        }
-
-        .lib-chip i {
-            color: var(--success);
-            font-size: 10px;
-        }
-
-        /* ==================== MODALS ==================== */
-        .modal {
+        /* Modals */
+        .modal-overlay {
+            display: none;
             position: fixed;
             inset: 0;
             background: rgba(0,0,0,0.7);
-            backdrop-filter: blur(4px);
             z-index: 1000;
-            display: none;
             justify-content: center;
             align-items: flex-end;
             padding: 20px;
         }
 
-        .modal.show {
+        .modal-overlay.show {
             display: flex;
         }
 
@@ -655,28 +626,25 @@
         }
 
         @keyframes slideUp {
-            from { transform: translateY(100%); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
         }
 
         .modal-title {
             font-size: 20px;
             font-weight: 700;
             margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
         }
 
         .modal-input {
             width: 100%;
-            padding: 14px 16px;
+            padding: 14px;
             background: var(--bg-dark);
             border: 1px solid var(--border);
-            border-radius: 10px;
+            border-radius: 8px;
             color: var(--text-primary);
             font-size: 16px;
-            margin-bottom: 20px;
+            margin-bottom: 16px;
         }
 
         .modal-input:focus {
@@ -692,10 +660,11 @@
         .modal-btn {
             flex: 1;
             height: 48px;
-            border-radius: 10px;
+            border-radius: 8px;
             border: none;
             font-size: 15px;
             font-weight: 600;
+            cursor: pointer;
         }
 
         .modal-btn.primary {
@@ -708,7 +677,7 @@
             color: var(--text-primary);
         }
 
-        /* ==================== TOAST ==================== */
+        /* Toast */
         .toast-container {
             position: fixed;
             top: 70px;
@@ -717,23 +686,21 @@
             z-index: 5000;
             width: 90%;
             max-width: 400px;
-            pointer-events: none;
         }
 
         .toast {
             background: var(--bg-panel);
             color: white;
             padding: 14px 18px;
-            border-radius: 12px;
+            border-radius: 10px;
             margin-bottom: 10px;
             display: flex;
             align-items: center;
             gap: 12px;
             font-size: 14px;
             animation: toastIn 0.3s ease;
-            box-shadow: var(--shadow);
             border-left: 4px solid var(--accent);
-            pointer-events: auto;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         }
 
         .toast.success { border-left-color: var(--success); }
@@ -742,20 +709,6 @@
         @keyframes toastIn {
             from { opacity: 0; transform: translateY(-20px); }
             to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* ==================== UTILITIES ==================== */
-        .hidden { display: none !important; }
-
-        /* Scrollbar */
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: var(--border);
-            border-radius: 3px;
         }
 
         /* Empty State */
@@ -770,88 +723,57 @@
             margin-bottom: 16px;
             opacity: 0.5;
         }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 3px;
+        }
     </style>
 </head>
 <body>
 
     <!-- Splash Screen -->
     <div id="splash">
-        <div class="splash-icon">
-            <i class="fab fa-python"></i>
-        </div>
-        <h1>PyIDE</h1>
-        <p>Python on Your Phone</p>
-        <div class="splash-loader">
-            <div class="splash-bar"></div>
+        <div class="splash-content">
+            <div class="splash-icon">
+                <i class="fab fa-python"></i>
+            </div>
+            <h1>PyIDE Pro</h1>
+            <p>Python with Folders</p>
+            <div class="loading-bar">
+                <div class="loading-progress"></div>
+            </div>
         </div>
     </div>
 
-    <!-- Sidebar Overlay -->
+    <!-- Sidebar Overlay (Mobile) -->
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
-
-    <!-- Sidebar -->
-    <aside class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-            <div class="sidebar-title">
-                <i class="fas fa-folder-open" style="color: var(--accent);"></i>
-                Files
-            </div>
-            <button class="btn btn-icon" onclick="closeSidebar()">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        
-        <div class="sidebar-content">
-            <div class="new-file-card" onclick="showNewFileModal()">
-                <i class="fas fa-plus"></i>
-                Create New File
-            </div>
-
-            <div class="section-header">
-                <span>Your Files</span>
-                <span id="fileCount">0 files</span>
-            </div>
-            
-            <ul class="file-list" id="fileList">
-                <!-- Files loaded here -->
-            </ul>
-
-            <div style="margin-top: 32px;">
-                <div class="section-header">
-                    <span>Libraries</span>
-                    <button class="btn btn-icon" style="width: 32px; height: 32px;" onclick="showLibModal()">
-                        <i class="fas fa-plus" style="font-size: 12px;"></i>
-                    </button>
-                </div>
-                <div class="libs-grid" id="libList">
-                    <div class="lib-chip"><i class="fas fa-check"></i> math</div>
-                    <div class="lib-chip"><i class="fas fa-check"></i> random</div>
-                    <div class="lib-chip"><i class="fas fa-check"></i> datetime</div>
-                </div>
-            </div>
-        </div>
-    </aside>
 
     <!-- Main App -->
     <div id="app">
-        
         <!-- Header -->
-        <header class="app-header">
+        <header class="header">
             <div class="header-left">
-                <button class="btn btn-icon" onclick="openSidebar()">
+                <button class="btn btn-icon" onclick="toggleSidebar()" id="menuBtn">
                     <i class="fas fa-bars"></i>
                 </button>
             </div>
             
             <div class="header-title">
                 <i class="fab fa-python"></i>
-                <span id="currentFilename">main.py</span>
-                <span class="unsaved-indicator" id="unsavedDot">●</span>
+                <span id="currentFile">main.py</span>
+                <span class="unsaved" id="unsavedIndicator">●</span>
             </div>
             
             <div class="header-right">
-                <button class="btn btn-icon" onclick="toggleTheme()">
-                    <i class="fas fa-moon" id="themeIcon"></i>
+                <button class="btn btn-icon" onclick="toggleOutput()" id="outputBtn">
+                    <i class="fas fa-terminal"></i>
                 </button>
                 <button class="btn btn-primary" onclick="runCode()">
                     <i class="fas fa-play"></i>
@@ -860,153 +782,148 @@
             </div>
         </header>
 
-        <!-- Editor -->
-        <div class="editor-section">
-            <div class="editor-toolbar">
-                <div class="toolbar-group">
-                    <button class="toolbar-btn" onclick="saveFile()">
-                        <i class="fas fa-save"></i> Save
-                    </button>
-                    <button class="toolbar-btn" onclick="formatCode()">
-                        <i class="fas fa-magic"></i> Format
+        <!-- Content -->
+        <div class="content">
+            <!-- Sidebar -->
+            <aside class="sidebar" id="sidebar">
+                <div class="sidebar-header">
+                    <div class="sidebar-title">
+                        <i class="fas fa-folder-open" style="color: var(--accent);"></i>
+                        Files
+                    </div>
+                    <button class="btn btn-icon" onclick="toggleSidebar()">
+                        <i class="fas fa-times"></i>
                     </button>
                 </div>
-                <span style="color: var(--text-secondary); font-size: 12px;" id="cursorPos">Ln 1, Col 1</span>
+                
+                <div class="sidebar-content">
+                    <!-- Breadcrumb -->
+                    <div class="breadcrumb" id="breadcrumb">
+                        <span class="breadcrumb-item" onclick="goToRoot()">Root</span>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="action-grid">
+                        <button class="action-btn" onclick="showNewFolderModal()">
+                            <i class="fas fa-folder-plus"></i>
+                            New Folder
+                        </button>
+                        <button class="action-btn" onclick="showNewFileModal()">
+                            <i class="fas fa-file-plus"></i>
+                            New File
+                        </button>
+                    </div>
+
+                    <!-- Items List -->
+                    <div id="itemsList">
+                        <!-- Folders and files loaded here -->
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Editor Area -->
+            <div class="editor-area">
+                <div class="toolbar">
+                    <div class="toolbar-left">
+                        <button class="toolbar-btn" onclick="saveFile()">
+                            <i class="fas fa-save"></i> Save
+                        </button>
+                        <button class="toolbar-btn" onclick="formatCode()">
+                            <i class="fas fa-magic"></i> Format
+                        </button>
+                        <button class="toolbar-btn" onclick="downloadFile()">
+                            <i class="fas fa-download"></i> Download
+                        </button>
+                    </div>
+                    <span style="color: var(--text-secondary); font-size: 12px;" id="cursorPos">Ln 1, Col 1</span>
+                </div>
+                
+                <div class="editor-container" id="editorContainer"></div>
             </div>
-            <div class="editor-container" id="editorContainer"></div>
         </div>
 
         <!-- Output Panel -->
         <div class="output-panel" id="outputPanel">
             <div class="output-header">
                 <div class="output-tabs">
-                    <button class="tab-btn active" onclick="switchTab('console')" id="tabConsole">
-                        <i class="fas fa-terminal"></i> Console
-                    </button>
-                    <button class="tab-btn" onclick="switchTab('help')" id="tabHelp">
-                        <i class="fas fa-question-circle"></i> Help
-                    </button>
+                    <button class="tab active" onclick="switchTab('console')">Console</button>
+                    <button class="tab" onclick="switchTab('help')">Help</button>
                 </div>
                 <button class="toolbar-btn" onclick="clearConsole()">
                     <i class="fas fa-trash"></i>
                 </button>
             </div>
             
-            <div class="output-content">
-                <div id="viewConsole">
-                    <div class="console-output" id="consoleOutput"></div>
-                    <div class="console-input-area">
+            <div class="output-content" id="outputContent">
+                <div id="consoleView">
+                    <div id="consoleOutput"></div>
+                    <div class="console-input-wrapper">
                         <span class="prompt">>>></span>
-                        <input type="text" id="consoleInput" placeholder="Enter input..." onkeypress="handleInput(event)">
+                        <input type="text" id="consoleInput" placeholder="Type input..." onkeypress="handleInput(event)">
                     </div>
                 </div>
                 
-                <div id="viewHelp" class="hidden">
-                    <div class="help-content">
-                        <h4>Quick Commands</h4>
-                        <p><code>print("Hello")</code> - Output text</p>
-                        <p><code>input("Name: ")</code> - Get input</p>
-                        <p><code>len(list)</code> - Get length</p>
-                        <p><code>range(5)</code> - Generate numbers</p>
-                        <p><code>import random</code> - Use library</p>
+                <div id="helpView" style="display: none;">
+                    <div style="color: var(--text-secondary); line-height: 1.8; font-size: 13px;">
+                        <h4 style="color: var(--accent); margin-bottom: 10px;">Quick Commands</h4>
+                        <p><code style="background: var(--bg-dark); padding: 2px 8px; border-radius: 4px;">print()</code> - Output text</p>
+                        <p><code style="background: var(--bg-dark); padding: 2px 8px; border-radius: 4px;">input()</code> - Get input</p>
+                        <p><code style="background: var(--bg-dark); padding: 2px 8px; border-radius: 4px;">len()</code> - Get length</p>
+                        <p><code style="background: var(--bg-dark); padding: 2px 8px; border-radius: 4px;">range()</code> - Generate numbers</p>
                         
-                        <h4>Features</h4>
+                        <h4 style="color: var(--accent); margin: 20px 0 10px;">Tips</h4>
+                        <p>• Tap folder to open it</p>
+                        <p>• Long press file to delete</p>
+                        <p• Use breadcrumb to go back</p>
                         <p>• Auto-save every 30 seconds</p>
-                        <p>• Files stored permanently</p>
-                        <p>• 30+ Python libraries</p>
-                        <p>• Dark/Light theme</p>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Bottom Navigation -->
+        <!-- Bottom Nav (Mobile) -->
         <nav class="bottom-nav">
-            <button class="nav-item active" onclick="setNav('editor')" id="navEditor">
+            <div class="nav-item active" onclick="setView('editor')">
                 <i class="fas fa-code"></i>
                 <span>Editor</span>
-            </button>
-            <button class="nav-item" onclick="toggleOutput()" id="navConsole">
-                <i class="fas fa-terminal"></i>
-                <span>Console</span>
-            </button>
-            <button class="nav-item" onclick="openSidebar()" id="navFiles">
+            </div>
+            <div class="nav-item" onclick="setView('files')">
                 <i class="fas fa-folder"></i>
                 <span>Files</span>
-            </button>
-            <button class="nav-item" onclick="showShortcuts()" id="navMore">
-                <i class="fas fa-ellipsis-h"></i>
-                <span>More</span>
-            </button>
+            </div>
+            <div class="nav-item" onclick="toggleOutput()">
+                <i class="fas fa-terminal"></i>
+                <span>Console</span>
+            </div>
         </nav>
     </div>
 
+    <!-- New Folder Modal -->
+    <div class="modal-overlay" id="newFolderModal">
+        <div class="modal-sheet">
+            <div class="modal-title">
+                <i class="fas fa-folder-plus" style="color: var(--accent);"></i>
+                New Folder
+            </div>
+            <input type="text" class="modal-input" id="folderNameInput" placeholder="folder_name">
+            <div class="modal-actions">
+                <button class="modal-btn secondary" onclick="closeModal('newFolderModal')">Cancel</button>
+                <button class="modal-btn primary" onclick="createFolder()">Create</button>
+            </div>
+        </div>
+    </div>
+
     <!-- New File Modal -->
-    <div class="modal" id="newFileModal">
+    <div class="modal-overlay" id="newFileModal">
         <div class="modal-sheet">
             <div class="modal-title">
                 <i class="fas fa-file-plus" style="color: var(--accent);"></i>
                 New File
             </div>
-            <input type="text" class="modal-input" id="newFilename" placeholder="filename.py" value="script.py">
+            <input type="text" class="modal-input" id="fileNameInput" placeholder="script.py">
             <div class="modal-actions">
                 <button class="modal-btn secondary" onclick="closeModal('newFileModal')">Cancel</button>
-                <button class="modal-btn primary" onclick="createNewFile()">Create</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Library Modal -->
-    <div class="modal" id="libModal">
-        <div class="modal-sheet">
-            <div class="modal-title">
-                <i class="fas fa-cubes" style="color: var(--accent);"></i>
-                Install Libraries
-            </div>
-            <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;">
-                <label style="display: flex; align-items: center; gap: 12px; padding: 12px; background: var(--bg-dark); border-radius: 10px;">
-                    <input type="checkbox" value="numpy" style="width: 20px; height: 20px;">
-                    <div>
-                        <div style="font-weight: 600;">numpy</div>
-                        <div style="font-size: 12px; color: var(--text-secondary);">Numerical computing</div>
-                    </div>
-                </label>
-                <label style="display: flex; align-items: center; gap: 12px; padding: 12px; background: var(--bg-dark); border-radius: 10px;">
-                    <input type="checkbox" value="pandas" style="width: 20px; height: 20px;">
-                    <div>
-                        <div style="font-weight: 600;">pandas</div>
-                        <div style="font-size: 12px; color: var(--text-secondary);">Data analysis</div>
-                    </div>
-                </label>
-                <label style="display: flex; align-items: center; gap: 12px; padding: 12px; background: var(--bg-dark); border-radius: 10px;">
-                    <input type="checkbox" value="turtle" style="width: 20px; height: 20px;">
-                    <div>
-                        <div style="font-weight: 600;">turtle</div>
-                        <div style="font-size: 12px; color: var(--text-secondary);">Graphics drawing</div>
-                    </div>
-                </label>
-            </div>
-            <div class="modal-actions">
-                <button class="modal-btn secondary" onclick="closeModal('libModal')">Cancel</button>
-                <button class="modal-btn primary" onclick="installLibs()">Install</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Actions Modal -->
-    <div class="modal" id="actionsModal">
-        <div class="modal-sheet">
-            <div class="modal-title">File Actions</div>
-            <div style="display: flex; flex-direction: column; gap: 8px;">
-                <button class="modal-btn secondary" onclick="downloadCurrentFile()" style="justify-content: flex-start; padding: 0 16px;">
-                    <i class="fas fa-download" style="margin-right: 10px;"></i> Download File
-                </button>
-                <button class="modal-btn secondary" onclick="shareCode()" style="justify-content: flex-start; padding: 0 16px;">
-                    <i class="fas fa-share" style="margin-right: 10px;"></i> Share Code
-                </button>
-                <button class="modal-btn secondary" onclick="closeModal('actionsModal')" style="justify-content: flex-start; padding: 0 16px;">
-                    <i class="fas fa-times" style="margin-right: 10px;"></i> Cancel
-                </button>
+                <button class="modal-btn primary" onclick="createFile()">Create</button>
             </div>
         </div>
     </div>
@@ -1022,100 +939,147 @@
     <script src="https://cdn.jsdelivr.net/npm/skulpt@1.2.0/dist/skulpt-stdlib.js"></script>
 
     <script>
-        // ==================== FILE MANAGER ====================
-        class FileManager {
+        // ==================== FILE SYSTEM ====================
+        class FileSystem {
             constructor() {
-                this.files = this.load();
-                this.current = null;
+                this.root = this.load() || { type: 'folder', name: 'Root', children: {}, modified: Date.now() };
+                this.currentPath = [];
+                this.currentFile = null;
                 this.listeners = [];
-                
-                if (Object.keys(this.files).length === 0) {
-                    this.create('main.py', '# Welcome to PyIDE Mobile! 🐍\n# Tap "Run" to execute your code\n\nprint("Hello, World!")\nname = input("What is your name? ")\nprint("Nice to meet you, " + name + "!")');
-                }
             }
 
             load() {
                 try {
-                    const data = localStorage.getItem('pyide_files');
-                    return data ? JSON.parse(data) : {};
+                    const data = localStorage.getItem('pyide_fs_v2');
+                    return data ? JSON.parse(data) : null;
                 } catch(e) {
-                    console.error('Load error:', e);
-                    return {};
+                    return null;
                 }
             }
 
             save() {
                 try {
-                    localStorage.setItem('pyide_files', JSON.stringify(this.files));
+                    localStorage.setItem('pyide_fs_v2', JSON.stringify(this.root));
                     return true;
                 } catch(e) {
-                    showToast('Storage full! Delete old files', 'error');
+                    showToast('Storage full!', 'error');
                     return false;
                 }
             }
 
-            create(name, content = '') {
-                if (!name.endsWith('.py')) name += '.py';
-                
-                // Handle duplicate names
-                let finalName = name;
-                let counter = 1;
-                while (this.files[finalName]) {
-                    const base = name.replace('.py', '');
-                    finalName = `${base}_${counter}.py`;
-                    counter++;
+            getCurrentFolder() {
+                let folder = this.root;
+                for (const name of this.currentPath) {
+                    folder = folder.children[name];
                 }
+                return folder;
+            }
 
-                const file = {
-                    name: finalName,
-                    content: content,
-                    created: Date.now(),
+            getPathString() {
+                return this.currentPath.join('/');
+            }
+
+            createFolder(name) {
+                const folder = this.getCurrentFolder();
+                if (folder.children[name]) {
+                    showToast('Folder already exists!', 'error');
+                    return null;
+                }
+                
+                folder.children[name] = {
+                    type: 'folder',
+                    name: name,
+                    children: {},
                     modified: Date.now()
                 };
-
-                this.files[finalName] = file;
+                
                 this.save();
-                this.notify('create', file);
-                return file;
+                this.notify('change');
+                return folder.children[name];
             }
 
-            update(name, content) {
-                if (!this.files[name]) return false;
-                this.files[name].content = content;
-                this.files[name].modified = Date.now();
+            createFile(name, content = '') {
+                const folder = this.getCurrentFolder();
+                if (!name.endsWith('.py')) name += '.py';
+                
+                if (folder.children[name]) {
+                    showToast('File already exists!', 'error');
+                    return null;
+                }
+                
+                folder.children[name] = {
+                    type: 'file',
+                    name: name,
+                    content: content,
+                    modified: Date.now()
+                };
+                
                 this.save();
-                this.notify('update', this.files[name]);
-                return true;
+                this.notify('change');
+                return folder.children[name];
             }
 
-            delete(name) {
-                if (!this.files[name]) return false;
-                delete this.files[name];
-                this.save();
-                this.notify('delete', { name });
-                if (this.current === name) this.current = null;
-                return true;
-            }
-
-            get(name) {
-                return this.files[name] || null;
-            }
-
-            getAll() {
-                return Object.values(this.files).sort((a, b) => b.modified - a.modified);
-            }
-
-            setCurrent(name) {
-                if (this.files[name] || name === null) {
-                    this.current = name;
-                    this.notify('select', name ? this.files[name] : null);
+            deleteItem(name) {
+                const folder = this.getCurrentFolder();
+                if (folder.children[name]) {
+                    delete folder.children[name];
+                    this.save();
+                    this.notify('change');
                     return true;
                 }
                 return false;
             }
 
-            getCurrent() {
-                return this.current ? this.files[this.current] : null;
+            navigateTo(folderName) {
+                if (folderName === null) {
+                    this.currentPath = [];
+                } else {
+                    this.currentPath.push(folderName);
+                }
+                this.notify('navigate');
+            }
+
+            navigateUp() {
+                this.currentPath.pop();
+                this.notify('navigate');
+            }
+
+            goToRoot() {
+                this.currentPath = [];
+                this.notify('navigate');
+            }
+
+            openFile(name) {
+                const folder = this.getCurrentFolder();
+                const file = folder.children[name];
+                if (file && file.type === 'file') {
+                    this.currentFile = { ...file, path: [...this.currentPath, name] };
+                    this.notify('fileOpen', this.currentFile);
+                    return file;
+                }
+                return null;
+            }
+
+            saveCurrentFile(content) {
+                if (!this.currentFile) return false;
+                
+                const folder = this.getCurrentFolder();
+                const file = folder.children[this.currentFile.name];
+                if (file) {
+                    file.content = content;
+                    file.modified = Date.now();
+                    this.save();
+                    return true;
+                }
+                return false;
+            }
+
+            getAllItems() {
+                const folder = this.getCurrentFolder();
+                return Object.values(folder.children).sort((a, b) => {
+                    if (a.type !== b.type) return a.type === 'folder' ? -1 : 1;
+                    return a.name.localeCompare(b.name);
+                });
             }
 
             subscribe(callback) {
@@ -1131,15 +1095,14 @@
                 });
             }
 
-            download(name) {
-                const file = this.files[name];
-                if (!file) return;
+            downloadCurrentFile() {
+                if (!this.currentFile) return;
                 
-                const blob = new Blob([file.content], { type: 'text/plain' });
+                const blob = new Blob([this.currentFile.content], { type: 'text/plain' });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = name;
+                a.download = this.currentFile.name;
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
@@ -1147,7 +1110,7 @@
             }
         }
 
-        const fileManager = new FileManager();
+        const fs = new FileSystem();
 
         // ==================== EDITOR ====================
         let editor;
@@ -1163,7 +1126,6 @@
                 matchBrackets: true,
                 autoCloseBrackets: true,
                 lineWrapping: true,
-                cursorBlinkRate: 530,
                 extraKeys: {
                     'Tab': (cm) => {
                         if (cm.somethingSelected()) {
@@ -1171,17 +1133,13 @@
                         } else {
                             cm.replaceSelection('    ');
                         }
-                    },
-                    'Ctrl-S': () => saveFile(),
-                    'Cmd-S': () => saveFile(),
-                    'Ctrl-Enter': () => runCode(),
-                    'Cmd-Enter': () => runCode()
+                    }
                 }
             });
 
             editor.on('change', () => {
                 isDirty = true;
-                document.getElementById('unsavedDot').classList.add('show');
+                document.getElementById('unsavedIndicator').classList.add('show');
             });
 
             editor.on('cursorActivity', () => {
@@ -1189,36 +1147,41 @@
                 document.getElementById('cursorPos').textContent = `Ln ${pos.line + 1}, Col ${pos.ch + 1}`;
             });
 
-            // Load first file
-            const files = fileManager.getAll();
-            if (files.length > 0) {
-                loadFile(files[0]);
-            }
-
-            // Listen for changes
-            fileManager.subscribe((event, data) => {
-                if (event === 'select' && data) {
+            // Listen for file opens
+            fs.subscribe((event, data) => {
+                if (event === 'fileOpen' && data) {
                     editor.setValue(data.content);
                     isDirty = false;
-                    document.getElementById('unsavedDot').classList.remove('show');
-                    document.getElementById('currentFilename').textContent = data.name;
+                    document.getElementById('unsavedIndicator').classList.remove('show');
+                    document.getElementById('currentFile').textContent = data.name;
+                    
+                    // On mobile, close sidebar and show editor
+                    if (window.innerWidth <= 768) {
+                        document.getElementById('sidebar').classList.remove('open');
+                        document.getElementById('sidebarOverlay').classList.remove('show');
+                    }
                 }
-                if (['create', 'delete', 'update'].includes(event)) {
-                    renderFileList();
+                if (event === 'change' || event === 'navigate') {
+                    renderItems();
                 }
             });
-        }
 
-        function loadFile(file) {
-            fileManager.setCurrent(file.name);
+            // Open first file if exists
+            const items = fs.getAllItems();
+            const firstFile = items.find(i => i.type === 'file');
+            if (firstFile) {
+                fs.openFile(firstFile.name);
+            } else {
+                // Create default file
+                fs.createFile('main.py', '# Welcome to PyIDE Pro!\n# Create folders to organize your files\n\nprint("Hello, World!")');
+                fs.openFile('main.py');
+            }
         }
 
         function saveFile() {
-            const current = fileManager.getCurrent();
-            if (current) {
-                fileManager.update(current.name, editor.getValue());
+            if (fs.saveCurrentFile(editor.getValue())) {
                 isDirty = false;
-                document.getElementById('unsavedDot').classList.remove('show');
+                document.getElementById('unsavedIndicator').classList.remove('show');
                 showToast('Saved!', 'success');
             }
         }
@@ -1248,28 +1211,30 @@
             }
 
             editor.setValue(formatted.join('\n'));
-            showToast('Code formatted!', 'success');
+            showToast('Formatted!', 'success');
         }
 
-        // Auto-save every 30 seconds
+        function downloadFile() {
+            fs.downloadCurrentFile();
+            showToast('Downloading...', 'success');
+        }
+
+        // Auto-save
         setInterval(() => {
             if (isDirty) {
-                const current = fileManager.getCurrent();
-                if (current) {
-                    fileManager.update(current.name, editor.getValue());
-                    isDirty = false;
-                    document.getElementById('unsavedDot').classList.remove('show');
-                }
+                fs.saveCurrentFile(editor.getValue());
+                isDirty = false;
+                document.getElementById('unsavedIndicator').classList.remove('show');
             }
         }, 30000);
 
         // ==================== PYTHON RUNNER ====================
         function initPython() {
             Sk.configure({
-                output: (text) => appendOutput(text, 'output'),
+                output: (text) => appendConsole(text, 'output'),
                 inputfun: (prompt) => {
                     return new Promise((resolve) => {
-                        appendOutput(prompt, 'info');
+                        appendConsole(prompt, 'info');
                         window.resolveInput = resolve;
                         document.getElementById('consoleInput').focus();
                     });
@@ -1286,30 +1251,27 @@
                 return;
             }
 
-            // Open console
+            // Show output
             document.getElementById('outputPanel').classList.add('open');
             switchTab('console');
-            setNav('console');
-
-            appendOutput('▶️ Running...', 'info');
+            
+            appendConsole('▶️ Running...', 'info');
 
             try {
                 await Sk.misceval.asyncToPromise(() => {
                     return Sk.importMainWithBody("<stdin>", false, code, true);
                 });
-                appendOutput('✅ Finished!', 'success');
+                appendConsole('✅ Done!', 'success');
             } catch (err) {
                 let msg = err.toString();
                 if (msg.includes('TimeLimitError')) {
-                    msg = '⏱️ Code took too long! (Infinite loop?)';
-                } else if (msg.includes('SyntaxError')) {
-                    msg = '❌ Syntax Error: Check your code';
+                    msg = '⏱️ Infinite loop detected!';
                 }
-                appendOutput(msg, 'error');
+                appendConsole('❌ ' + msg, 'error');
             }
         }
 
-        function appendOutput(text, type) {
+        function appendConsole(text, type) {
             const output = document.getElementById('consoleOutput');
             const div = document.createElement('div');
             div.className = `console-line ${type}`;
@@ -1329,288 +1291,207 @@
                     window.resolveInput(value);
                     window.resolveInput = null;
                 }
-                appendOutput('>>> ' + value, 'info');
+                appendConsole('>>> ' + value, 'info');
                 e.target.value = '';
             }
         }
 
         // ==================== UI FUNCTIONS ====================
-        function openSidebar() {
-            document.getElementById('sidebar').classList.add('show');
-            document.getElementById('sidebarOverlay').classList.add('show');
-            renderFileList();
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            
+            if (window.innerWidth > 768) return; // Desktop: always visible
+            
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('show');
         }
 
-        function closeSidebar() {
-            document.getElementById('sidebar').classList.remove('show');
-            document.getElementById('sidebarOverlay').classList.remove('show');
-        }
-
-        document.getElementById('sidebarOverlay').addEventListener('click', closeSidebar);
-
-        function renderFileList() {
-            const files = fileManager.getAll();
-            const current = fileManager.getCurrent();
+        function renderItems() {
+            const items = fs.getAllItems();
+            const container = document.getElementById('itemsList');
             
-            document.getElementById('fileCount').textContent = `${files.length} file${files.length !== 1 ? 's' : ''}`;
+            // Update breadcrumb
+            updateBreadcrumb();
             
-            const list = document.getElementById('fileList');
-            
-            if (files.length === 0) {
-                list.innerHTML = `
+            if (items.length === 0) {
+                container.innerHTML = `
                     <div class="empty-state">
                         <i class="fas fa-folder-open"></i>
-                        <p>No files yet</p>
+                        <p>Empty folder</p>
+                        <p style="font-size: 12px; margin-top: 8px;">Create a folder or file</p>
                     </div>
                 `;
                 return;
             }
             
-            list.innerHTML = files.map(file => `
-                <li class="file-card ${current?.name === file.name ? 'active' : ''}" onclick="selectFile('${file.name}')">
-                    <div class="file-icon">
-                        <i class="fas fa-file-code"></i>
+            container.innerHTML = items.map(item => `
+                <div class="item-card ${fs.currentFile?.name === item.name && item.type === 'file' ? 'active' : ''}" 
+                     onclick="handleItemClick('${item.name}', '${item.type}')"
+                     oncontextmenu="handleItemLongPress(event, '${item.name}'); return false;">
+                    <div class="item-icon ${item.type}">
+                        <i class="fas fa-${item.type === 'folder' ? 'folder' : 'file-code'}"></i>
                     </div>
-                    <div class="file-info">
-                        <div class="file-name">${file.name}</div>
-                        <div class="file-date">${formatTime(file.modified)}</div>
+                    <div class="item-info">
+                        <div class="item-name">${item.name}</div>
+                        <div class="item-meta">${formatDate(item.modified)}</div>
                     </div>
-                    <button class="file-menu" onclick="showFileMenu(event, '${file.name}')">
+                    <div class="item-menu" onclick="showItemMenu(event, '${item.name}')">
                         <i class="fas fa-ellipsis-v"></i>
-                    </button>
-                </li>
+                    </div>
+                </div>
             `).join('');
         }
 
-        function formatTime(timestamp) {
-            const diff = Date.now() - timestamp;
+        function updateBreadcrumb() {
+            const bc = document.getElementById('breadcrumb');
+            let html = `<span class="breadcrumb-item" onclick="goToRoot()">Root</span>`;
+            
+            let path = '';
+            fs.currentPath.forEach((name, index) => {
+                path += '/' + name;
+                html += `
+                    <span class="breadcrumb-separator">/</span>
+                    <span class="breadcrumb-item" onclick="navigateToIndex(${index})">${name}</span>
+                `;
+            });
+            
+            bc.innerHTML = html;
+        }
+
+        function formatDate(timestamp) {
+            const date = new Date(timestamp);
+            const now = new Date();
+            const diff = now - date;
+            
             if (diff < 60000) return 'Just now';
             if (diff < 3600000) return Math.floor(diff/60000) + 'm ago';
             if (diff < 86400000) return Math.floor(diff/3600000) + 'h ago';
-            return new Date(timestamp).toLocaleDateString();
+            return date.toLocaleDateString();
         }
 
-        function selectFile(name) {
-            const file = fileManager.get(name);
-            if (file) {
-                loadFile(file);
-                closeSidebar();
+        function handleItemClick(name, type) {
+            if (type === 'folder') {
+                fs.navigateTo(name);
+            } else {
+                fs.openFile(name);
             }
+        }
+
+        function goToRoot() {
+            fs.goToRoot();
+        }
+
+        function navigateToIndex(index) {
+            fs.currentPath = fs.currentPath.slice(0, index + 1);
+            fs.notify('navigate');
+        }
+
+        function handleItemLongPress(e, name) {
+            e.preventDefault();
+            deleteItem(name);
+        }
+
+        function showItemMenu(e, name) {
+            e.stopPropagation();
+            deleteItem(name);
+        }
+
+        function deleteItem(name) {
+            if (confirm(`Delete "${name}"?`)) {
+                fs.deleteItem(name);
+                showToast('Deleted', 'info');
+            }
+        }
+
+        // Modals
+        function showNewFolderModal() {
+            document.getElementById('newFolderModal').classList.add('show');
+            document.getElementById('folderNameInput').focus();
         }
 
         function showNewFileModal() {
             document.getElementById('newFileModal').classList.add('show');
-            document.getElementById('newFilename').focus();
-            document.getElementById('newFilename').select();
-        }
-
-        function createNewFile() {
-            const input = document.getElementById('newFilename');
-            const name = input.value.trim();
-            
-            if (!name) {
-                showToast('Enter a filename!', 'error');
-                return;
-            }
-
-            const file = fileManager.create(name, '# New Python File\n\n');
-            loadFile(file);
-            
-            input.value = 'script.py';
-            closeModal('newFileModal');
-            closeSidebar();
-            showToast('File created!', 'success');
-        }
-
-        function showFileMenu(e, name) {
-            e.stopPropagation();
-            if (confirm(`Delete "${name}"?`)) {
-                fileManager.delete(name);
-                showToast('File deleted', 'info');
-                
-                // Load another file
-                const files = fileManager.getAll();
-                if (files.length > 0) {
-                    loadFile(files[0]);
-                } else {
-                    const newFile = fileManager.create('main.py', '# New file <li class="file-card ${current?.name === file.name ? 'active' : ''}" onclick="selectFile('${file.name}')">
-                    <div class="file-icon">
-                        <i class="fas fa-file-code"></i>
-                    </div>
-                    <div class="file-info">
-                        <div class="file-name">${file.name}</div>
-                        <div class="file-date">${formatTime(file.modified)}</div>
-                    </div>
-                    <button class="file-menu" onclick="showFileMenu(event, '${file.name}')">
-                        <i class="fas fa-ellipsis-v"></i>
-                    </button>
-                </li>
-            `).join('');
-        }
-
-        function formatTime(timestamp) {
-            const diff = Date.now() - timestamp;
-            if (diff < 60000) return 'Just now';
-            if (diff < 3600000) return Math.floor(diff/60000) + 'm ago';
-            if (diff < 86400000) return Math.floor(diff/3600000) + 'h ago';
-            return new Date(timestamp).toLocaleDateString();
-        }
-
-        function selectFile(name) {
-            const file = fileManager.get(name);
-            if (file) {
-                loadFile(file);
-                closeSidebar();
-            }
-        }
-
-        function showNewFileModal() {
-            document.getElementById('newFileModal').classList.add('show');
-            document.getElementById('newFilename').focus();
-            document.getElementById('newFilename').select();
-        }
-
-        function createNewFile() {
-            const input = document.getElementById('newFilename');
-            const name = input.value.trim();
-            
-            if (!name) {
-                showToast('Enter a filename!', 'error');
-                return;
-            }
-
-            const file = fileManager.create(name, '# New Python File\n\n');
-            loadFile(file);
-            
-            input.value = 'script.py';
-            closeModal('newFileModal');
-            closeSidebar();
-            showToast('File created!', 'success');
-        }
-
-        function showFileMenu(e, name) {
-            e.stopPropagation();
-            if (confirm(`Delete "${name}"?`)) {
-                fileManager.delete(name);
-                showToast('File deleted', 'info');
-                
-                // Load another file
-                const files = fileManager.getAll();
-                if (files.length > 0) {
-                    loadFile(files[0]);
-                } else {
-                    const newFile = fileManager.create('main.py', '# New file\n\n');
-                    loadFile(newFile);
-                }
-                renderFileList();
-            }
-        }
-
-        function downloadCurrentFile() {
-            const current = fileManager.getCurrent();
-            if (current) {
-                fileManager.download(current.name);
-                showToast('Downloading...', 'success');
-            }
-            closeModal('actionsModal');
-        }
-
-        function showLibModal() {
-            document.getElementById('libModal').classList.add('show');
-        }
-
-        function installLibs() {
-            const checkboxes = document.querySelectorAll('#libModal input:checked');
-            const libs = Array.from(checkboxes).map(cb => cb.value);
-            
-            if (libs.length > 0) {
-                const container = document.getElementById('libList');
-                libs.forEach(lib => {
-                    const div = document.createElement('div');
-                    div.className = 'lib-chip';
-                    div.innerHTML = `<i class="fas fa-check"></i> ${lib}`;
-                    container.appendChild(div);
-                });
-                showToast(`Installed ${libs.length} libraries!`, 'success');
-            }
-            
-            closeModal('libModal');
-            checkboxes.forEach(cb => cb.checked = false);
+            document.getElementById('fileNameInput').focus();
         }
 
         function closeModal(id) {
             document.getElementById(id).classList.remove('show');
         }
 
+        function createFolder() {
+            const input = document.getElementById('folderNameInput');
+            const name = input.value.trim();
+            
+            if (!name) {
+                showToast('Enter folder name!', 'error');
+                return;
+            }
+            
+            if (fs.createFolder(name)) {
+                input.value = '';
+                closeModal('newFolderModal');
+                showToast('Folder created!', 'success');
+            }
+        }
+
+        function createFile() {
+            const input = document.getElementById('fileNameInput');
+            const name = input.value.trim();
+            
+            if (!name) {
+                showToast('Enter file name!', 'error');
+                return;
+            }
+            
+            const file = fs.createFile(name, '# New Python file\n\n');
+            if (file) {
+                fs.openFile(file.name);
+                input.value = '';
+                closeModal('newFileModal');
+                showToast('File created!', 'success');
+            }
+        }
+
         // Close modal on outside click
-        document.querySelectorAll('.modal').forEach(modal => {
+        document.querySelectorAll('.modal-overlay').forEach(modal => {
             modal.addEventListener('click', (e) => {
                 if (e.target === modal) modal.classList.remove('show');
             });
         });
 
-        // ==================== NAVIGATION ====================
+        // Tabs
         function switchTab(tab) {
-            document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active'));
-            document.getElementById(`tab${tab.charAt(0).toUpperCase() + tab.slice(1)}`).classList.add('active');
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
             
-            document.getElementById('viewConsole').classList.toggle('hidden', tab !== 'console');
-            document.getElementById('viewHelp').classList.toggle('hidden', tab !== 'help');
+            document.getElementById('consoleView').style.display = tab === 'console' ? 'block' : 'none';
+            document.getElementById('helpView').style.display = tab === 'help' ? 'block' : 'none';
         }
 
         function toggleOutput() {
             const panel = document.getElementById('outputPanel');
-            const isOpen = panel.classList.contains('open');
+            panel.classList.toggle('open');
             
-            if (isOpen) {
-                panel.classList.remove('open');
-                setNav('editor');
-            } else {
-                panel.classList.add('open');
-                setNav('console');
-            }
-        }
-
-        function setNav(nav) {
+            // Update nav
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            
-            if (nav === 'editor') {
-                document.getElementById('navEditor').classList.add('active');
-                document.getElementById('outputPanel').classList.remove('open');
-            } else if (nav === 'console') {
-                document.getElementById('navConsole').classList.add('active');
-                document.getElementById('outputPanel').classList.add('open');
+            if (panel.classList.contains('open')) {
+                event.target.closest('.nav-item').classList.add('active');
+            } else {
+                document.querySelector('.nav-item:first-child').classList.add('active');
             }
         }
 
-        function showShortcuts() {
-            document.getElementById('actionsModal').classList.add('show');
+        function setView(view) {
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            event.target.closest('.nav-item').classList.add('active');
+            
+            if (view === 'files') {
+                toggleSidebar();
+            }
         }
 
-        // ==================== THEME ====================
-        function toggleTheme() {
-            const html = document.documentElement;
-            const current = html.getAttribute('data-theme');
-            const next = current === 'light' ? 'dark' : 'light';
-            
-            html.setAttribute('data-theme', next);
-            localStorage.setItem('pyide_theme', next);
-            
-            const icon = document.getElementById('themeIcon');
-            icon.className = next === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
-            
-            editor.setOption('theme', next === 'dark' ? 'dracula' : 'eclipse');
-        }
-
-        function loadTheme() {
-            const saved = localStorage.getItem('pyide_theme') || 'dark';
-            document.documentElement.setAttribute('data-theme', saved);
-            
-            const icon = document.getElementById('themeIcon');
-            icon.className = saved === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
-        }
-
-        // ==================== UTILITIES ====================
+        // Toast
         function showToast(message, type = 'info') {
             const container = document.getElementById('toastContainer');
             const toast = document.createElement('div');
@@ -1628,52 +1509,26 @@
             setTimeout(() => toast.remove(), 3000);
         }
 
-        function shareCode() {
-            const code = editor.getValue();
-            const encoded = btoa(code);
-            const url = `${window.location.origin}${window.location.pathname}?code=${encoded}`;
-            
-            navigator.clipboard.writeText(url).then(() => {
-                showToast('Share link copied!', 'success');
-            });
-            
-            closeModal('actionsModal');
-        }
-
-        // Check for shared code in URL
-        function checkSharedCode() {
-            const params = new URLSearchParams(window.location.search);
-            const code = params.get('code');
-            if (code) {
-                try {
-                    const decoded = atob(code);
-                    editor.setValue(decoded);
-                    showToast('Shared code loaded!', 'success');
-                } catch(e) {}
-            }
-        }
-
         // ==================== INITIALIZATION ====================
         document.addEventListener('DOMContentLoaded', () => {
-            // Hide splash
+            // Hide splash after load
             setTimeout(() => {
                 document.getElementById('splash').style.opacity = '0';
                 setTimeout(() => {
                     document.getElementById('splash').style.display = 'none';
                     document.getElementById('app').classList.add('active');
+                    
+                    // Initialize
+                    initEditor();
+                    initPython();
+                    renderItems();
                 }, 500);
             }, 2500);
-
-            loadTheme();
-            initEditor();
-            initPython();
-            checkSharedCode();
 
             // Keyboard shortcuts
             document.addEventListener('keydown', (e) => {
                 if (e.key === 'Escape') {
-                    closeSidebar();
-                    document.querySelectorAll('.modal').forEach(m => m.classList.remove('show'));
+                    document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('show'));
                 }
             });
         });
