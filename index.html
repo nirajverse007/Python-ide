@@ -5,10 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>PyIDE Pro - Python with Folders</title>
     
+    <!-- CodeMirror CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/dracula.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/fold/foldgutter.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/dialog/dialog.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/hint/show-hint.min.css">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
         :root {
@@ -29,7 +34,20 @@
             
             --header-h: 56px;
             --nav-h: 64px;
+            --toolbar-h: 44px;
+            --mobile-tools-h: 40px;
             --radius: 12px;
+        }
+
+        /* Light Theme Variables */
+        [data-theme="light"] {
+            --bg-dark: #f8fafc;
+            --bg-panel: #ffffff;
+            --bg-hover: #e2e8f0;
+            --text-primary: #0f172a;
+            --text-secondary: #64748b;
+            --border: #cbd5e1;
+            --accent: #3b82f6;
         }
 
         * {
@@ -45,6 +63,44 @@
             background: var(--bg-dark);
             color: var(--text-primary);
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        /* Animated Background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(-45deg, #0f172a, #1e293b, #0f172a, #1e3a5f);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            z-index: -1;
+            opacity: 0.5;
+        }
+
+        [data-theme="light"] body::before {
+            background: linear-gradient(-45deg, #f0f9ff, #e0f2fe, #f0f9ff, #dbeafe);
+            opacity: 0.3;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Glassmorphism */
+        .glass {
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        [data-theme="light"] .glass {
+            background: rgba(255, 255, 255, 0.8);
         }
 
         /* Splash Screen */
@@ -183,6 +239,7 @@
             justify-content: center;
             gap: 6px;
             cursor: pointer;
+            transition: all 0.2s;
         }
 
         .btn:active {
@@ -200,6 +257,26 @@
             background: var(--success);
             color: white;
             font-weight: 600;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--accent);
+            color: white;
+            border: none;
+            cursor: pointer;
+            z-index: 100;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
         }
 
         /* Content Area */
@@ -380,6 +457,36 @@
             color: var(--accent);
         }
 
+        .item-icon.python {
+            background: rgba(55, 118, 171, 0.2);
+            color: #3776ab;
+        }
+
+        .item-icon.html {
+            background: rgba(227, 76, 38, 0.2);
+            color: #e34c26;
+        }
+
+        .item-icon.css {
+            background: rgba(38, 77, 228, 0.2);
+            color: #264de4;
+        }
+
+        .item-icon.js {
+            background: rgba(240, 219, 79, 0.2);
+            color: #f0db4f;
+        }
+
+        .item-icon.json {
+            background: rgba(166, 226, 46, 0.2);
+            color: #a6e22e;
+        }
+
+        .item-icon.txt {
+            background: rgba(148, 163, 184, 0.2);
+            color: #94a3b8;
+        }
+
         .item-info {
             flex: 1;
             min-width: 0;
@@ -414,7 +521,7 @@
         }
 
         .toolbar {
-            height: 44px;
+            height: var(--toolbar-h);
             background: var(--bg-panel);
             border-bottom: 1px solid var(--border);
             display: flex;
@@ -422,11 +529,14 @@
             justify-content: space-between;
             padding: 0 12px;
             flex-shrink: 0;
+            gap: 8px;
+            overflow-x: auto;
         }
 
         .toolbar-left {
             display: flex;
             gap: 8px;
+            flex: 1;
         }
 
         .toolbar-btn {
@@ -441,6 +551,7 @@
             align-items: center;
             gap: 6px;
             cursor: pointer;
+            white-space: nowrap;
         }
 
         .toolbar-btn:active {
@@ -448,45 +559,107 @@
             color: var(--text-primary);
         }
 
-        /* Naya: Mobile Tools Style */
+        .toolbar-btn.active {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+        }
+
+        /* Mobile Tools - Fixed above keyboard */
+        .mobile-tools-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: var(--bg-panel);
+            border-top: 1px solid var(--border);
+            transition: transform 0.3s ease;
+        }
+
         .mobile-tools {
             display: flex;
-            background: var(--bg-panel);
-            border-bottom: 1px solid var(--border);
             overflow-x: auto;
             padding: 6px;
             gap: 6px;
             scrollbar-width: none;
+            height: var(--mobile-tools-h);
         }
-        .mobile-tools::-webkit-scrollbar { display: none; }
+
+        .mobile-tools::-webkit-scrollbar { 
+            display: none; 
+        }
+
         .tool-btn {
             flex-shrink: 0;
-            height: 34px;
-            min-width: 38px;
+            height: 28px;
+            min-width: 36px;
+            padding: 0 8px;
             background: var(--bg-hover);
             border: 1px solid var(--border);
             border-radius: 6px;
             color: var(--text-primary);
-            font-family: 'SF Mono', monospace;
-            font-weight: bold;
+            font-family: 'SF Mono', Monaco, monospace;
+            font-size: 13px;
+            font-weight: 600;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
         }
-        .tool-btn:active { background: var(--accent); color: white; }
+
+        .tool-btn:active { 
+            background: var(--accent); 
+            color: white; 
+        }
+
+        .tool-btn.keyword {
+            background: rgba(96, 165, 250, 0.2);
+            color: var(--accent);
+            text-transform: lowercase;
+        }
+
+        .tool-btn.keyword:active {
+            background: var(--accent);
+            color: white;
+        }
+
+        .tool-btn.bracket {
+            background: rgba(251, 191, 36, 0.2);
+            color: #fbbf24;
+            font-weight: bold;
+        }
+
+        .tool-btn.bracket:active {
+            background: #fbbf24;
+            color: var(--bg-dark);
+        }
 
         .editor-container {
             flex: 1;
             overflow: hidden;
+            position: relative;
         }
 
-        .CodeMirror {
-            height: 100%;
-            font-family: 'SF Mono', Monaco, monospace;
-            font-size: 15px;
-            line-height: 1.6;
-            background: var(--bg-dark) !important;
+        /* Split Editor */
+        .editor-split {
+            display: none;
+            flex: 1;
+            flex-direction: row;
+        }
+
+        .editor-split.active {
+            display: flex;
+        }
+
+        .editor-pane {
+            flex: 1;
+            overflow: hidden;
+            border-right: 1px solid var(--border);
+        }
+
+        .editor-pane:last-child {
+            border-right: none;
         }
 
         /* Output Panel */
@@ -549,6 +722,7 @@
         .console-line.error { color: var(--error); }
         .console-line.success { color: var(--success); }
         .console-line.info { color: var(--accent); }
+        .console-line.warning { color: var(--warning); }
 
         .console-input-wrapper {
             display: flex;
@@ -573,6 +747,45 @@
             font-family: monospace;
             font-size: 13px;
             outline: none;
+        }
+
+        /* Profiler Panel */
+        .profiler-panel {
+            display: none;
+            padding: 12px;
+            background: var(--bg-dark);
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+
+        .profiler-panel.active {
+            display: block;
+        }
+
+        .profiler-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .stat-box {
+            background: var(--bg-panel);
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 20px;
+            font-weight: bold;
+            color: var(--accent);
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-top: 4px;
         }
 
         /* Bottom Nav (Mobile Only) */
@@ -604,6 +817,14 @@
             
             .output-panel.open {
                 transform: translateY(0);
+            }
+
+            /* Mobile tools adjustment when keyboard opens */
+            .keyboard-open .mobile-tools-container {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
             }
         }
 
@@ -733,6 +954,7 @@
 
         .toast.success { border-left-color: var(--success); }
         .toast.error { border-left-color: var(--error); }
+        .toast.warning { border-left-color: var(--warning); }
 
         @keyframes toastIn {
             from { opacity: 0; transform: translateY(-20px); }
@@ -762,6 +984,243 @@
             background: var(--border);
             border-radius: 3px;
         }
+
+        /* CodeMirror Customizations */
+        .CodeMirror {
+            height: 100%;
+            font-family: 'SF Mono', Monaco, monospace;
+            font-size: 15px;
+            line-height: 1.6;
+            background: var(--bg-dark) !important;
+        }
+
+        .CodeMirror-gutters {
+            background: var(--bg-panel) !important;
+            border-right: 1px solid var(--border) !important;
+        }
+
+        .CodeMirror-linenumber {
+            color: var(--text-secondary) !important;
+        }
+
+        .CodeMirror-cursor {
+            border-left: 2px solid var(--accent) !important;
+        }
+
+        .CodeMirror-selected {
+            background: rgba(96, 165, 250, 0.3) !important;
+        }
+
+        .CodeMirror-matchingbracket {
+            background: rgba(96, 165, 250, 0.3) !important;
+            color: var(--accent) !important;
+        }
+
+        .CodeMirror-nonmatchingbracket {
+            background: rgba(239, 68, 68, 0.3) !important;
+            color: var(--error) !important;
+        }
+
+        /* Fold Gutter */
+        .CodeMirror-foldmarker {
+            color: var(--accent);
+            text-shadow: none;
+            font-family: Arial;
+            line-height: 0.3;
+            cursor: pointer;
+            padding: 0 3px;
+            border-radius: 3px;
+            background: var(--bg-hover);
+        }
+
+        .CodeMirror-foldgutter {
+            width: 20px;
+        }
+
+        .CodeMirror-foldgutter-open,
+        .CodeMirror-foldgutter-folded {
+            color: var(--text-secondary);
+            cursor: pointer;
+            line-height: 22px;
+            text-align: center;
+        }
+
+        .CodeMirror-foldgutter-open::after {
+            content: "\25BE";
+        }
+
+        .CodeMirror-foldgutter-folded::after {
+            content: "\25B8";
+        }
+
+        /* Dialog */
+        .CodeMirror-dialog {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        .CodeMirror-dialog input {
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            padding: 6px 10px;
+            border-radius: 4px;
+            outline: none;
+        }
+
+        /* Hint/Autocomplete */
+        .CodeMirror-hints {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        .CodeMirror-hint {
+            color: var(--text-primary);
+            padding: 8px 12px;
+            border-radius: 4px;
+        }
+
+        .CodeMirror-hint-active {
+            background: var(--accent);
+            color: white;
+        }
+
+        /* Snippet Suggestions */
+        .snippet-hint {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .snippet-hint::before {
+            content: "⚡";
+            color: var(--secondary);
+        }
+
+        /* Diff View */
+        .diff-view {
+            display: none;
+            padding: 12px;
+            background: var(--bg-dark);
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 13px;
+            white-space: pre-wrap;
+        }
+
+        .diff-view.active {
+            display: block;
+        }
+
+        .diff-added {
+            background: rgba(34, 197, 94, 0.2);
+            color: var(--success);
+        }
+
+        .diff-removed {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--error);
+        }
+
+        /* Voice Input Button */
+        .voice-btn {
+            position: fixed;
+            bottom: 140px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--error);
+            color: white;
+            border: none;
+            cursor: pointer;
+            z-index: 100;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .voice-btn.recording {
+            animation: recording 1s infinite;
+        }
+
+        @keyframes recording {
+            0%, 100% { background: var(--error); }
+            50% { background: #dc2626; }
+        }
+
+        /* Font Size Controls */
+        .font-size-controls {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .font-btn {
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .font-btn:active {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+        }
+
+        /* Zen Mode */
+        .zen-mode .header,
+        .zen-mode .sidebar,
+        .zen-mode .bottom-nav,
+        .zen-mode .toolbar,
+        .zen-mode .output-panel {
+            display: none !important;
+        }
+
+        .zen-mode .editor-area {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+        }
+
+        .zen-mode .mobile-tools-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+        }
+
+        .exit-zen-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            display: none;
+        }
+
+        .zen-mode .exit-zen-btn {
+            display: flex;
+        }
     </style>
 </head>
 <body>
@@ -787,6 +1246,12 @@
                 <button class="btn btn-icon" onclick="toggleSidebar()" id="menuBtn">
                     <i class="fas fa-bars"></i>
                 </button>
+                <button class="btn btn-icon" onclick="undo()" title="Undo (Ctrl+Z)">
+                    <i class="fas fa-undo"></i>
+                </button>
+                <button class="btn btn-icon" onclick="redo()" title="Redo (Ctrl+Y)">
+                    <i class="fas fa-redo"></i>
+                </button>
             </div>
             
             <div class="header-title">
@@ -796,6 +1261,9 @@
             </div>
             
             <div class="header-right">
+                <button class="btn btn-icon" onclick="toggleZenMode()" title="Zen Mode">
+                    <i class="fas fa-expand"></i>
+                </button>
                 <button class="btn btn-icon" onclick="toggleOutput()" id="outputBtn">
                     <i class="fas fa-terminal"></i>
                 </button>
@@ -805,6 +1273,10 @@
                 </button>
             </div>
         </header>
+
+        <button class="btn btn-icon exit-zen-btn" onclick="toggleZenMode()">
+            <i class="fas fa-compress"></i>
+        </button>
 
         <div class="content">
             <aside class="sidebar" id="sidebar">
@@ -834,8 +1306,7 @@
                         </button>
                     </div>
 
-                    <div id="itemsList">
-                        </div>
+                    <div id="itemsList"></div>
                 </div>
             </aside>
 
@@ -848,29 +1319,59 @@
                         <button class="toolbar-btn" onclick="formatCode()">
                             <i class="fas fa-magic"></i> Format
                         </button>
-                        <button class="toolbar-btn" onclick="downloadFile()">
-                            <i class="fas fa-download"></i> Download
+                        <button class="toolbar-btn" onclick="findAndReplace()">
+                            <i class="fas fa-search"></i> Find
                         </button>
+                        <button class="toolbar-btn" onclick="toggleSplitView()" id="splitBtn">
+                            <i class="fas fa-columns"></i> Split
+                        </button>
+                        <button class="toolbar-btn" onclick="toggleDiffView()" id="diffBtn">
+                            <i class="fas fa-code-branch"></i> Diff
+                        </button>
+                        <button class="toolbar-btn" onclick="toggleProfiler()" id="profilerBtn">
+                            <i class="fas fa-chart-line"></i> Profile
+                        </button>
+                        <div class="font-size-controls">
+                            <button class="font-btn" onclick="changeFontSize(-1)">A-</button>
+                            <button class="font-btn" onclick="changeFontSize(1)">A+</button>
+                        </div>
                     </div>
                     <span style="color: var(--text-secondary); font-size: 12px;" id="cursorPos">Ln 1, Col 1</span>
                 </div>
                 
-                <div class="mobile-tools">
-                    <button class="tool-btn" onclick="insertChar('\t')">Tab</button>
-                    <button class="tool-btn" onclick="insertChar(':')">:</button>
-                    <button class="tool-btn" onclick="insertChar('(')">(</button>
-                    <button class="tool-btn" onclick="insertChar(')')">)</button>
-                    <button class="tool-btn" onclick="insertChar('[')">[</button>
-                    <button class="tool-btn" onclick="insertChar(']')">]</button>
-                    <button class="tool-btn" onclick="insertChar('{')">{</button>
-                    <button class="tool-btn" onclick="insertChar('}')">}</button>
-                    <button class="tool-btn" onclick="insertChar('\'')">'</button>
-                    <button class="tool-btn" onclick="insertChar('\"')">"</button>
-                    <button class="tool-btn" onclick="insertChar('=')">=</button>
-                    <button class="tool-btn" onclick="insertChar(',')">,</button>
+                <!-- Split View -->
+                <div class="editor-split" id="editorSplit">
+                    <div class="editor-pane" id="editorPane1"></div>
+                    <div class="editor-pane" id="editorPane2"></div>
                 </div>
-                
+
+                <!-- Normal Editor -->
                 <div class="editor-container" id="editorContainer"></div>
+
+                <!-- Diff View -->
+                <div class="diff-view" id="diffView"></div>
+
+                <!-- Profiler Panel -->
+                <div class="profiler-panel" id="profilerPanel">
+                    <div style="font-weight: 600; margin-bottom: 8px;">
+                        <i class="fas fa-chart-line" style="color: var(--accent);"></i> Performance Profile
+                    </div>
+                    <div class="profiler-stats">
+                        <div class="stat-box">
+                            <div class="stat-value" id="execTime">0ms</div>
+                            <div class="stat-label">Execution Time</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-value" id="memUsed">0MB</div>
+                            <div class="stat-label">Memory Used</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-value" id="speedRating">-</div>
+                            <div class="stat-label">Speed Rating</div>
+                        </div>
+                    </div>
+                    <div id="profilerTips" style="margin-top: 12px; font-size: 12px; color: var(--text-secondary);"></div>
+                </div>
             </div>
         </div>
 
@@ -879,6 +1380,7 @@
                 <div class="output-tabs">
                     <button class="tab active" onclick="switchTab('console')">Console</button>
                     <button class="tab" onclick="switchTab('help')">Help</button>
+                    <button class="tab" onclick="switchTab('snippets')">Snippets</button>
                 </div>
                 <button class="toolbar-btn" onclick="clearConsole()">
                     <i class="fas fa-trash"></i>
@@ -902,11 +1404,47 @@
                         <p><code style="background: var(--bg-dark); padding: 2px 8px; border-radius: 4px;">len()</code> - Get length</p>
                         <p><code style="background: var(--bg-dark); padding: 2px 8px; border-radius: 4px;">range()</code> - Generate numbers</p>
                         
+                        <h4 style="color: var(--accent); margin: 20px 0 10px;">Keyboard Shortcuts</h4>
+                        <p>• Ctrl+S - Save</p>
+                        <p>• Ctrl+F - Find</p>
+                        <p>• Ctrl+H - Replace</p>
+                        <p>• Ctrl+Z - Undo</p>
+                        <p>• Ctrl+Y - Redo</p>
+                        <p>• Ctrl+D - Select Next Occurrence</p>
+                        <p>• Ctrl+Space - Autocomplete</p>
+                        
                         <h4 style="color: var(--accent); margin: 20px 0 10px;">Tips</h4>
                         <p>• Tap folder to open it</p>
                         <p>• Long press file to delete</p>
                         <p>• Use breadcrumb to go back</p>
                         <p>• Auto-save every 30 seconds</p>
+                    </div>
+                </div>
+
+                <div id="snippetsView" style="display: none;">
+                    <div style="color: var(--text-secondary); line-height: 1.8; font-size: 13px;">
+                        <h4 style="color: var(--accent); margin-bottom: 10px;">Code Snippets</h4>
+                        <p>Type these and press Tab:</p>
+                        <div style="margin-top: 10px; display: flex; flex-direction: column; gap: 8px;">
+                            <div class="snippet-item" onclick="insertSnippet('for')" style="cursor: pointer; padding: 8px; background: var(--bg-dark); border-radius: 6px;">
+                                <code style="color: var(--accent);">for</code> - For loop
+                            </div>
+                            <div class="snippet-item" onclick="insertSnippet('if')" style="cursor: pointer; padding: 8px; background: var(--bg-dark); border-radius: 6px;">
+                                <code style="color: var(--accent);">if</code> - If statement
+                            </div>
+                            <div class="snippet-item" onclick="insertSnippet('def')" style="cursor: pointer; padding: 8px; background: var(--bg-dark); border-radius: 6px;">
+                                <code style="color: var(--accent);">def</code> - Function definition
+                            </div>
+                            <div class="snippet-item" onclick="insertSnippet('class')" style="cursor: pointer; padding: 8px; background: var(--bg-dark); border-radius: 6px;">
+                                <code style="color: var(--accent);">class</code> - Class definition
+                            </div>
+                            <div class="snippet-item" onclick="insertSnippet('try')" style="cursor: pointer; padding: 8px; background: var(--bg-dark); border-radius: 6px;">
+                                <code style="color: var(--accent);">try</code> - Try-except block
+                            </div>
+                            <div class="snippet-item" onclick="insertSnippet('ifmain')" style="cursor: pointer; padding: 8px; background: var(--bg-dark); border-radius: 6px;">
+                                <code style="color: var(--accent);">ifmain</code> - Main guard
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -928,6 +1466,81 @@
         </nav>
     </div>
 
+    <!-- Mobile Tools Toolbar - Fixed above keyboard -->
+    <div class="mobile-tools-container" id="mobileToolsContainer">
+        <div class="mobile-tools" id="mobileTools">
+            <!-- Brackets -->
+            <button class="tool-btn bracket" onclick="insertChar('(')">(</button>
+            <button class="tool-btn bracket" onclick="insertChar(')')">)</button>
+            <button class="tool-btn bracket" onclick="insertChar('[')">[</button>
+            <button class="tool-btn bracket" onclick="insertChar(']')">]</button>
+            <button class="tool-btn bracket" onclick="insertChar('{')">{</button>
+            <button class="tool-btn bracket" onclick="insertChar('}')">}</button>
+            
+            <!-- Quotes -->
+            <button class="tool-btn" onclick="insertChar('\'')">'</button>
+            <button class="tool-btn" onclick="insertChar('\"')">"</button>
+            
+            <!-- Operators -->
+            <button class="tool-btn" onclick="insertChar(':')">:</button>
+            <button class="tool-btn" onclick="insertChar(';')">;</button>
+            <button class="tool-btn" onclick="insertChar(',')">,</button>
+            <button class="tool-btn" onclick="insertChar('.')">.</button>
+            <button class="tool-btn" onclick="insertChar('=')">=</button>
+            <button class="tool-btn" onclick="insertChar('+')">+</button>
+            <button class="tool-btn" onclick="insertChar('-')">-</button>
+            <button class="tool-btn" onclick="insertChar('*')">*</button>
+            <button class="tool-btn" onclick="insertChar('/')">/</button>
+            <button class="tool-btn" onclick="insertChar('%')">%</button>
+            
+            <!-- Keywords -->
+            <button class="tool-btn keyword" onclick="insertKeyword('if')">if</button>
+            <button class="tool-btn keyword" onclick="insertKeyword('else')">else</button>
+            <button class="tool-btn keyword" onclick="insertKeyword('elif')">elif</button>
+            <button class="tool-btn keyword" onclick="insertKeyword('for')">for</button>
+            <button class="tool-btn keyword" onclick="insertKeyword('while')">while</button>
+            <button class="tool-btn keyword" onclick="insertKeyword('def')">def</button>
+            <button class="tool-btn keyword" onclick="insertKeyword('class')">class</button>
+            <button class="tool-btn keyword" onclick="insertKeyword('return')">return</button>
+            <button class="tool-btn keyword" onclick="insertKeyword('import')">import</button>
+            <button class="tool-btn keyword" onclick="insertKeyword('from')">from</button>
+            <button class="tool-btn keyword" onclick="insertKeyword('try')">try</button>
+            <button class="tool-btn keyword" onclick="insertKeyword('except')">except</button>
+            <button class="tool-btn keyword" onclick="insertKeyword('True')">True</button>
+            <button class="tool-btn keyword" onclick="insertKeyword('False')">False</button>
+            <button class="tool-btn keyword" onclick="insertKeyword('None')">None</button>
+            <button class="tool-btn keyword" onclick="insertKeyword('and')">and</button>
+            <button class="tool-btn keyword" onclick="insertKeyword('or')">or</button>
+            <button class="tool-btn keyword" onclick="insertKeyword('not')">not</button>
+            <button class="tool-btn keyword" onclick="insertKeyword('in')">in</button>
+            <button class="tool-btn keyword" onclick="insertKeyword('is')">is</button>
+            <button class="tool-btn keyword" onclick="insertKeyword('lambda')">lambda</button>
+            <button class="tool-btn keyword" onclick="insertKeyword('yield')">yield</button>
+            <button class="tool-btn keyword" onclick="insertKeyword('async')">async</button>
+            <button class="tool-btn keyword" onclick="insertKeyword('await')">await</button>
+            
+            <!-- Indent/Navigation -->
+            <button class="tool-btn" onclick="insertChar('\t')" style="min-width: 50px;">Tab</button>
+            <button class="tool-btn" onclick="moveCursor('home')" style="min-width: 40px;">
+                <i class="fas fa-angle-up"></i>
+            </button>
+            <button class="tool-btn" onclick="moveCursor('end')" style="min-width: 40px;">
+                <i class="fas fa-angle-down"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle Theme">
+        <i class="fas fa-sun" id="themeIcon"></i>
+    </button>
+
+    <!-- Voice Input -->
+    <button class="voice-btn" onclick="toggleVoiceInput()" id="voiceBtn" title="Voice Input">
+        <i class="fas fa-microphone"></i>
+    </button>
+
+    <!-- Modals -->
     <div class="modal-overlay" id="newFolderModal">
         <div class="modal-sheet">
             <div class="modal-title">
@@ -958,11 +1571,20 @@
 
     <div class="toast-container" id="toastContainer"></div>
 
+    <!-- Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/python/python.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/edit/closebrackets.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/edit/matchbrackets.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/fold/foldcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/fold/foldgutter.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/fold/indent-fold.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/search/search.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/search/searchcursor.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/dialog/dialog.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/hint/show-hint.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/hint/python-hint.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/selection/mark-selection.min.js"></script>
     
     <script src="https://cdn.jsdelivr.net/npm/skulpt@1.2.0/dist/skulpt.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/skulpt@1.2.0/dist/skulpt-stdlib.js"></script>
@@ -979,7 +1601,7 @@
 
             load() {
                 try {
-                    const data = localStorage.getItem('pyide_fs_v2');
+                    const data = localStorage.getItem('pyide_fs_v3');
                     return data ? JSON.parse(data) : null;
                 } catch(e) {
                     return null;
@@ -988,7 +1610,7 @@
 
             save() {
                 try {
-                    localStorage.setItem('pyide_fs_v2', JSON.stringify(this.root));
+                    localStorage.setItem('pyide_fs_v3', JSON.stringify(this.root));
                     return true;
                 } catch(e) {
                     showToast('Storage full!', 'error');
@@ -1029,7 +1651,7 @@
 
             createFile(name, content = '') {
                 const folder = this.getCurrentFolder();
-                if (!name.endsWith('.py')) name += '.py';
+                if (!name.includes('.')) name += '.py';
                 
                 if (folder.children[name]) {
                     showToast('File already exists!', 'error');
@@ -1141,11 +1763,100 @@
 
         const fs = new FileSystem();
 
+        // ==================== SNIPPETS ====================
+        const snippets = {
+            'for': {
+                text: 'for ${1:i} in range(${2:10}):\n    ${3:pass}',
+                displayText: 'for loop',
+                className: 'snippet-hint'
+            },
+            'if': {
+                text: 'if ${1:condition}:\n    ${2:pass}',
+                displayText: 'if statement',
+                className: 'snippet-hint'
+            },
+            'elif': {
+                text: 'elif ${1:condition}:\n    ${2:pass}',
+                displayText: 'elif statement',
+                className: 'snippet-hint'
+            },
+            'else': {
+                text: 'else:\n    ${1:pass}',
+                displayText: 'else statement',
+                className: 'snippet-hint'
+            },
+            'while': {
+                text: 'while ${1:condition}:\n    ${2:pass}',
+                displayText: 'while loop',
+                className: 'snippet-hint'
+            },
+            'def': {
+                text: 'def ${1:function_name}(${2:args}):\n    """${3:docstring}"""\n    ${4:pass}',
+                displayText: 'function definition',
+                className: 'snippet-hint'
+            },
+            'class': {
+                text: 'class ${1:ClassName}:\n    def __init__(self${2:, args}):\n        ${3:pass}',
+                displayText: 'class definition',
+                className: 'snippet-hint'
+            },
+            'ifmain': {
+                text: "if __name__ == '__main__':\n    ${1:main()}",
+                displayText: 'main guard',
+                className: 'snippet-hint'
+            },
+            'try': {
+                text: 'try:\n    ${1:pass}\nexcept ${2:Exception} as ${3:e}:\n    ${4:pass}',
+                displayText: 'try-except block',
+                className: 'snippet-hint'
+            },
+            'lambda': {
+                text: 'lambda ${1:args}: ${2:expression}',
+                displayText: 'lambda function',
+                className: 'snippet-hint'
+            },
+            'list': {
+                text: '[${1:item} for ${2:item} in ${3:iterable}]',
+                displayText: 'list comprehension',
+                className: 'snippet-hint'
+            },
+            'print': {
+                text: 'print(${1:"Hello World"})',
+                displayText: 'print statement',
+                className: 'snippet-hint'
+            },
+            'input': {
+                text: '${1:variable} = input("${2:Prompt: }")',
+                displayText: 'input statement',
+                className: 'snippet-hint'
+            },
+            'import': {
+                text: 'import ${1:module}',
+                displayText: 'import statement',
+                className: 'snippet-hint'
+            },
+            'from': {
+                text: 'from ${1:module} import ${2:name}',
+                displayText: 'from import',
+                className: 'snippet-hint'
+            },
+            'with': {
+                text: 'with open(${1:"file.txt"}, "${2:r}") as ${3:f}:\n    ${4:pass}',
+                displayText: 'with statement',
+                className: 'snippet-hint'
+            }
+        };
+
         // ==================== EDITOR ====================
         let editor;
+        let editor2;
         let isDirty = false;
+        let fontSize = 15;
+        let isSplitView = false;
+        let isZenMode = false;
 
         function initEditor() {
+            // Main Editor
             editor = CodeMirror(document.getElementById('editorContainer'), {
                 mode: 'python',
                 theme: 'dracula',
@@ -1154,29 +1865,102 @@
                 tabSize: 4,
                 matchBrackets: true,
                 autoCloseBrackets: true,
+                foldGutter: true,
+                gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter"],
                 lineWrapping: true,
                 extraKeys: {
-                    "Ctrl-Space": "autocomplete", // Added autocomplete shortcut
-                    'Tab': (cm) => {
+                    "Ctrl-Space": "autocomplete",
+                    "Ctrl-S": function(cm) { saveFile(); },
+                    "Ctrl-F": "findPersistent",
+                    "Ctrl-H": "replace",
+                    "Ctrl-Z": function(cm) { cm.undo(); },
+                    "Ctrl-Y": function(cm) { cm.redo(); },
+                    "Ctrl-D": "selectNextOccurrence",
+                    "Ctrl-Alt-Down": "addCursorToNextLine",
+                    "Tab": function(cm) {
                         if (cm.somethingSelected()) {
                             cm.indentSelection('add');
                         } else {
                             cm.replaceSelection('    ');
                         }
+                    },
+                    "Shift-Tab": function(cm) {
+                        cm.indentSelection('subtract');
                     }
                 }
             });
 
-            // Naya: Auto-suggest when typing
-            editor.on("inputRead", function(cm, change) {
+            // Second Editor (for split view)
+            editor2 = CodeMirror(document.getElementById('editorPane2'), {
+                mode: 'python',
+                theme: 'dracula',
+                lineNumbers: true,
+                indentUnit: 4,
+                tabSize: 4,
+                matchBrackets: true,
+                autoCloseBrackets: true,
+                lineWrapping: true,
+                readOnly: true
+            });
+
+            // Custom Autocomplete with Snippets
+            editor.on('inputRead', function(cm, change) {
                 if (change.text[0].match(/[a-z]/i)) {
-                    cm.showHint({hint: CodeMirror.hint.python, completeSingle: false});
+                    cm.showHint({
+                        hint: function(cm) {
+                            const cursor = cm.getCursor();
+                            const line = cm.getLine(cursor.line);
+                            const start = cursor.ch;
+                            let end = start;
+                            
+                            // Get current word
+                            while (end < line.length && /[\w]/.test(line.charAt(end))) ++end;
+                            while (start && /[\w]/.test(line.charAt(start - 1))) --start;
+                            
+                            const curWord = start !== end && line.slice(start, end);
+                            const list = [];
+                            
+                            // Add snippets
+                            for (const [key, snippet] of Object.entries(snippets)) {
+                                if (!curWord || key.startsWith(curWord)) {
+                                    list.push({
+                                        text: snippet.text,
+                                        displayText: key + ' - ' + snippet.displayText,
+                                        className: snippet.className
+                                    });
+                                }
+                            }
+                            
+                            // Add Python keywords
+                            const keywords = ['and', 'as', 'assert', 'break', 'class', 'continue', 'def', 
+                                'del', 'elif', 'else', 'except', 'False', 'finally', 'for', 'from', 
+                                'global', 'if', 'import', 'in', 'is', 'lambda', 'None', 'nonlocal', 
+                                'not', 'or', 'pass', 'raise', 'return', 'True', 'try', 'while', 
+                                'with', 'yield', 'async', 'await'];
+                            
+                            keywords.forEach(kw => {
+                                if (!curWord || kw.startsWith(curWord)) {
+                                    list.push({ text: kw, displayText: kw });
+                                }
+                            });
+                            
+                            return {
+                                list: list,
+                                from: CodeMirror.Pos(cursor.line, start),
+                                to: CodeMirror.Pos(cursor.line, end)
+                            };
+                        },
+                        completeSingle: false
+                    });
                 }
             });
 
             editor.on('change', () => {
                 isDirty = true;
                 document.getElementById('unsavedIndicator').classList.add('show');
+                if (isSplitView) {
+                    editor2.setValue(editor.getValue());
+                }
             });
 
             editor.on('cursorActivity', () => {
@@ -1192,7 +1976,10 @@
                     document.getElementById('unsavedIndicator').classList.remove('show');
                     document.getElementById('currentFile').textContent = data.name;
                     
-                    // On mobile, close sidebar and show editor
+                    if (isSplitView) {
+                        editor2.setValue(data.content);
+                    }
+                    
                     if (window.innerWidth <= 768) {
                         document.getElementById('sidebar').classList.remove('open');
                         document.getElementById('sidebarOverlay').classList.remove('show');
@@ -1209,19 +1996,123 @@
             if (firstFile) {
                 fs.openFile(firstFile.name);
             } else {
-                // Create default file
                 fs.createFile('main.py', '# Welcome to PyIDE Pro!\n# Create folders to organize your files\n\nimport math\nprint("Pi value is:", math.pi)');
                 fs.openFile('main.py');
             }
+
+            // Keyboard detection for mobile
+            setupKeyboardDetection();
         }
 
-        // Naya: Mobile Char Insertion
+        function setupKeyboardDetection() {
+            const originalHeight = window.innerHeight;
+            
+            window.addEventListener('resize', () => {
+                const currentHeight = window.innerHeight;
+                const heightDiff = originalHeight - currentHeight;
+                
+                // If height reduced significantly, keyboard is likely open
+                if (heightDiff > 150) {
+                    document.body.classList.add('keyboard-open');
+                    // Adjust mobile tools position
+                    const tools = document.getElementById('mobileToolsContainer');
+                    tools.style.position = 'fixed';
+                    tools.style.bottom = '0';
+                } else {
+                    document.body.classList.remove('keyboard-open');
+                }
+            });
+
+            // Focus detection
+            editor.on('focus', () => {
+                document.body.classList.add('keyboard-open');
+            });
+        }
+
+        // ==================== MOBILE TOOLS ====================
         function insertChar(char) {
             if (!editor) return;
             const doc = editor.getDoc();
             const cursor = doc.getCursor();
-            doc.replaceRange(char, cursor);
+            
+            // Auto-close brackets logic
+            const pairs = {
+                '(': ')',
+                '[': ']',
+                '{': '}',
+                '"': '"',
+                "'": "'"
+            };
+            
+            if (pairs[char]) {
+                // Check if next char is same as closing bracket
+                const nextChar = doc.getLine(cursor.line)[cursor.ch];
+                if (nextChar === pairs[char]) {
+                    // Just move cursor forward
+                    doc.setCursor({ line: cursor.line, ch: cursor.ch + 1 });
+                } else {
+                    doc.replaceSelection(char + pairs[char]);
+                    // Move cursor between brackets
+                    doc.setCursor({ line: cursor.line, ch: cursor.ch + 1 });
+                }
+            } else if (char === ')' || char === ']' || char === '}') {
+                // If next char is same closing bracket, just move cursor
+                const nextChar = doc.getLine(cursor.line)[cursor.ch];
+                if (nextChar === char) {
+                    doc.setCursor({ line: cursor.line, ch: cursor.ch + 1 });
+                } else {
+                    doc.replaceSelection(char);
+                }
+            } else {
+                doc.replaceSelection(char);
+            }
+            
             editor.focus();
+            haptic();
+        }
+
+        function insertKeyword(keyword) {
+            if (!editor) return;
+            const doc = editor.getDoc();
+            const cursor = doc.getCursor();
+            
+            // Add space after keyword if needed
+            const nextChar = doc.getLine(cursor.line)[cursor.ch];
+            const suffix = (nextChar === ' ' || nextChar === undefined) ? '' : ' ';
+            
+            doc.replaceSelection(keyword + suffix);
+            editor.focus();
+            haptic();
+        }
+
+        function moveCursor(where) {
+            if (!editor) return;
+            const cursor = editor.getCursor();
+            const line = cursor.line;
+            
+            if (where === 'home') {
+                editor.setCursor({ line: 0, ch: 0 });
+            } else if (where === 'end') {
+                const lastLine = editor.lineCount() - 1;
+                editor.setCursor({ line: lastLine, ch: editor.getLine(lastLine).length });
+            }
+            
+            editor.focus();
+        }
+
+        function haptic() {
+            if (navigator.vibrate) {
+                navigator.vibrate(10);
+            }
+        }
+
+        // ==================== EDITOR FUNCTIONS ====================
+        function undo() {
+            if (editor) editor.undo();
+        }
+
+        function redo() {
+            if (editor) editor.redo();
         }
 
         function saveFile() {
@@ -1260,9 +2151,117 @@
             showToast('Formatted!', 'success');
         }
 
-        function downloadFile() {
-            fs.downloadCurrentFile();
-            showToast('Downloading...', 'success');
+        function findAndReplace() {
+            editor.execCommand('findPersistent');
+        }
+
+        function changeFontSize(delta) {
+            fontSize += delta;
+            fontSize = Math.max(10, Math.min(24, fontSize));
+            editor.getWrapperElement().style.fontSize = fontSize + 'px';
+            editor.refresh();
+            
+            if (isSplitView) {
+                editor2.getWrapperElement().style.fontSize = fontSize + 'px';
+                editor2.refresh();
+            }
+        }
+
+        function toggleSplitView() {
+            isSplitView = !isSplitView;
+            const container = document.getElementById('editorContainer');
+            const split = document.getElementById('editorSplit');
+            const btn = document.getElementById('splitBtn');
+            
+            if (isSplitView) {
+                container.style.display = 'none';
+                split.classList.add('active');
+                btn.classList.add('active');
+                editor2.setValue(editor.getValue());
+            } else {
+                container.style.display = 'block';
+                split.classList.remove('active');
+                btn.classList.remove('active');
+            }
+        }
+
+        function toggleDiffView() {
+            const diffView = document.getElementById('diffView');
+            const container = document.getElementById('editorContainer');
+            const btn = document.getElementById('diffBtn');
+            
+            if (diffView.classList.contains('active')) {
+                diffView.classList.remove('active');
+                container.style.display = 'block';
+                btn.classList.remove('active');
+            } else {
+                diffView.classList.add('active');
+                container.style.display = 'none';
+                btn.classList.add('active');
+                showDiff();
+            }
+        }
+
+        function showDiff() {
+            if (!fs.currentFile) return;
+            
+            const current = editor.getValue();
+            const saved = fs.currentFile.content;
+            const diffView = document.getElementById('diffView');
+            
+            // Simple diff logic
+            const currentLines = current.split('\n');
+            const savedLines = saved.split('\n');
+            let html = '';
+            
+            const maxLines = Math.max(currentLines.length, savedLines.length);
+            
+            for (let i = 0; i < maxLines; i++) {
+                const curr = currentLines[i] || '';
+                const save = savedLines[i] || '';
+                
+                if (curr !== save) {
+                    if (save) {
+                        html += `<div class="diff-removed">- ${escapeHtml(save)}</div>`;
+                    }
+                    if (curr) {
+                        html += `<div class="diff-added">+ ${escapeHtml(curr)}</div>`;
+                    }
+                } else {
+                    html += `<div>  ${escapeHtml(curr)}</div>`;
+                }
+            }
+            
+            diffView.innerHTML = html || '<div style="color: var(--text-secondary);">No changes</div>';
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function toggleProfiler() {
+            const panel = document.getElementById('profilerPanel');
+            const btn = document.getElementById('profilerBtn');
+            
+            panel.classList.toggle('active');
+            btn.classList.toggle('active');
+        }
+
+        function toggleZenMode() {
+            isZenMode = !isZenMode;
+            document.body.classList.toggle('zen-mode');
+        }
+
+        function insertSnippet(name) {
+            const snippet = snippets[name];
+            if (snippet && editor) {
+                const cursor = editor.getCursor();
+                editor.replaceSelection(snippet.text);
+                editor.focus();
+                showToast(`Inserted ${name}`, 'success');
+            }
         }
 
         // Auto-save
@@ -1278,7 +2277,6 @@
         function initPython() {
             Sk.configure({
                 output: (text) => appendConsole(text, 'output'),
-                // Naya: Added 'read' to support standard libraries like math, random
                 read: (x) => {
                     if (Sk.builtinFiles === undefined || Sk.builtinFiles["files"][x] === undefined)
                         throw "File not found: '" + x + "'";
@@ -1309,10 +2307,36 @@
             
             appendConsole('▶️ Running...', 'info');
 
+            // Profile if enabled
+            const startTime = performance.now();
+            const startMemory = performance.memory ? performance.memory.usedJSHeapSize : 0;
+
             try {
                 await Sk.misceval.asyncToPromise(() => {
                     return Sk.importMainWithBody("<stdin>", false, code, true);
                 });
+                
+                // Calculate metrics
+                const execTime = performance.now() - startTime;
+                const memUsed = performance.memory ? (performance.memory.usedJSHeapSize - startMemory) / 1024 / 1024 : 0;
+                
+                document.getElementById('execTime').textContent = execTime.toFixed(2) + 'ms';
+                document.getElementById('memUsed').textContent = memUsed.toFixed(2) + 'MB';
+                
+                let rating = '🟢 Super Fast';
+                if (execTime > 100) rating = '🟡 Good';
+                if (execTime > 500) rating = '🟠 Average';
+                if (execTime > 1000) rating = '🔴 Slow';
+                document.getElementById('speedRating').textContent = rating;
+                
+                // Tips
+                const tips = document.getElementById('profilerTips');
+                if (execTime > 1000) {
+                    tips.innerHTML = '⚠️ Slow code detected! Tips:<br>• Use list comprehensions<br>• Avoid nested loops<br>• Use generators';
+                } else {
+                    tips.innerHTML = '✅ Code running efficiently!';
+                }
+                
                 appendConsole('✅ Done!', 'success');
             } catch (err) {
                 let msg = err.toString();
@@ -1353,7 +2377,7 @@
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('sidebarOverlay');
             
-            if (window.innerWidth > 768) return; // Desktop: always visible
+            if (window.innerWidth > 768) return;
             
             sidebar.classList.toggle('open');
             overlay.classList.toggle('show');
@@ -1363,7 +2387,6 @@
             const items = fs.getAllItems();
             const container = document.getElementById('itemsList');
             
-            // Update breadcrumb
             updateBreadcrumb();
             
             if (items.length === 0) {
@@ -1377,12 +2400,14 @@
                 return;
             }
             
-            container.innerHTML = items.map(item => `
+            container.innerHTML = items.map(item => {
+                const iconClass = getFileIconClass(item.name, item.type);
+                return `
                 <div class="item-card ${fs.currentFile?.name === item.name && item.type === 'file' ? 'active' : ''}" 
                      onclick="handleItemClick('${item.name}', '${item.type}')"
                      oncontextmenu="handleItemLongPress(event, '${item.name}'); return false;">
-                    <div class="item-icon ${item.type}">
-                        <i class="fas fa-${item.type === 'folder' ? 'folder' : 'file-code'}"></i>
+                    <div class="item-icon ${iconClass}">
+                        <i class="fas fa-${item.type === 'folder' ? 'folder' : 'file'}"></i>
                     </div>
                     <div class="item-info">
                         <div class="item-name">${item.name}</div>
@@ -1392,16 +2417,31 @@
                         <i class="fas fa-ellipsis-v"></i>
                     </div>
                 </div>
-            `).join('');
+            `}).join('');
+        }
+
+        function getFileIconClass(filename, type) {
+            if (type === 'folder') return 'folder';
+            
+            const ext = filename.split('.').pop().toLowerCase();
+            const iconMap = {
+                'py': 'python',
+                'html': 'html',
+                'htm': 'html',
+                'css': 'css',
+                'js': 'js',
+                'json': 'json',
+                'txt': 'txt'
+            };
+            
+            return iconMap[ext] || 'file';
         }
 
         function updateBreadcrumb() {
             const bc = document.getElementById('breadcrumb');
             let html = `<span class="breadcrumb-item" onclick="goToRoot()">Root</span>`;
             
-            let path = '';
             fs.currentPath.forEach((name, index) => {
-                path += '/' + name;
                 html += `
                     <span class="breadcrumb-separator">/</span>
                     <span class="breadcrumb-item" onclick="navigateToIndex(${index})">${name}</span>
@@ -1519,13 +2559,13 @@
             
             document.getElementById('consoleView').style.display = tab === 'console' ? 'block' : 'none';
             document.getElementById('helpView').style.display = tab === 'help' ? 'block' : 'none';
+            document.getElementById('snippetsView').style.display = tab === 'snippets' ? 'block' : 'none';
         }
 
         function toggleOutput() {
             const panel = document.getElementById('outputPanel');
             panel.classList.toggle('open');
             
-            // Update nav
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
             if (panel.classList.contains('open')) {
                 const termBtn = document.querySelector('.bottom-nav .nav-item:last-child');
@@ -1544,6 +2584,105 @@
             }
         }
 
+        // Theme Toggle
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            
+            const icon = document.getElementById('themeIcon');
+            icon.className = newTheme === 'light' ? 'fas fa-moon' : 'fas fa-sun';
+            
+            // Update CodeMirror theme
+            if (editor) {
+                editor.setOption('theme', newTheme === 'light' ? 'default' : 'dracula');
+            }
+            if (editor2) {
+                editor2.setOption('theme', newTheme === 'light' ? 'default' : 'dracula');
+            }
+            
+            localStorage.setItem('pyide_theme', newTheme);
+        }
+
+        // Load saved theme
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('pyide_theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            const icon = document.getElementById('themeIcon');
+            if (icon) {
+                icon.className = savedTheme === 'light' ? 'fas fa-moon' : 'fas fa-sun';
+            }
+        }
+
+        // Voice Input
+        let recognition = null;
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            
+            recognition.onresult = (e) => {
+                const transcript = e.results[0][0].transcript;
+                if (editor) {
+                    editor.replaceSelection(transcript);
+                }
+                document.getElementById('voiceBtn').classList.remove('recording');
+            };
+            
+            recognition.onerror = () => {
+                document.getElementById('voiceBtn').classList.remove('recording');
+                showToast('Voice recognition error', 'error');
+            };
+        }
+
+        function toggleVoiceInput() {
+            if (!recognition) {
+                showToast('Voice input not supported', 'error');
+                return;
+            }
+            
+            const btn = document.getElementById('voiceBtn');
+            if (btn.classList.contains('recording')) {
+                recognition.stop();
+                btn.classList.remove('recording');
+            } else {
+                recognition.start();
+                btn.classList.add('recording');
+                showToast('Listening...', 'info');
+            }
+        }
+
+        // Swipe Gestures
+        let touchStartX = 0;
+        let touchStartY = 0;
+
+        document.addEventListener('touchstart', e => {
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+        });
+
+        document.addEventListener('touchend', e => {
+            const diffX = e.changedTouches[0].clientX - touchStartX;
+            const diffY = e.changedTouches[0].clientY - touchStartY;
+            
+            // Swipe right from edge to open sidebar
+            if (diffX > 100 && Math.abs(diffY) < 50 && touchStartX < 50) {
+                const sidebar = document.getElementById('sidebar');
+                if (!sidebar.classList.contains('open')) {
+                    toggleSidebar();
+                }
+            }
+            
+            // Swipe left to close sidebar
+            if (diffX < -100 && Math.abs(diffY) < 50) {
+                const sidebar = document.getElementById('sidebar');
+                if (sidebar.classList.contains('open')) {
+                    toggleSidebar();
+                }
+            }
+        });
+
         // Toast
         function showToast(message, type = 'info') {
             const container = document.getElementById('toastContainer');
@@ -1553,7 +2692,8 @@
             const icons = {
                 success: 'fa-check-circle',
                 error: 'fa-exclamation-circle',
-                info: 'fa-info-circle'
+                info: 'fa-info-circle',
+                warning: 'fa-exclamation-triangle'
             };
             
             toast.innerHTML = `<i class="fas ${icons[type]}"></i> ${message}`;
@@ -1564,6 +2704,9 @@
 
         // ==================== INITIALIZATION ====================
         document.addEventListener('DOMContentLoaded', () => {
+            // Load theme first
+            loadTheme();
+            
             // Hide splash after load
             setTimeout(() => {
                 document.getElementById('splash').style.opacity = '0';
