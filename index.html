@@ -2,7 +2,7 @@
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <title>PyIDE Pro - Python with Folders</title>
@@ -166,7 +166,7 @@
             display: none;
             flex-direction: column;
             height: 100vh;
-            height: 100dvh; /* Dynamic viewport height for mobile */
+            height: 100dvh;
         }
 
         #app.active {
@@ -233,6 +233,8 @@
             gap: 6px;
             cursor: pointer;
             transition: all 0.2s;
+            min-height: 44px;
+            min-width: 44px;
         }
 
         .btn:active {
@@ -288,6 +290,8 @@
             display: flex;
             flex-direction: column;
             position: relative;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
         }
 
         @media (max-width: 768px) {
@@ -304,6 +308,40 @@
             .sidebar.open {
                 transform: translateX(0);
             }
+        }
+
+        /* Pull to Refresh */
+        .pull-refresh {
+            position: absolute;
+            top: -60px;
+            left: 0;
+            right: 0;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent);
+            font-size: 14px;
+            transition: top 0.3s ease;
+            z-index: 10;
+        }
+
+        .pull-refresh.visible {
+            top: 0;
+        }
+
+        .pull-refresh i {
+            margin-right: 8px;
+            transition: transform 0.3s ease;
+        }
+
+        .pull-refresh.spinning i {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
         }
 
         .sidebar-overlay {
@@ -328,6 +366,7 @@
             align-items: center;
             justify-content: space-between;
             padding: 0 16px;
+            flex-shrink: 0;
         }
 
         .sidebar-title {
@@ -342,6 +381,7 @@
             flex: 1;
             overflow-y: auto;
             padding: 16px;
+            position: relative;
         }
 
         /* Breadcrumb */
@@ -391,6 +431,7 @@
             align-items: center;
             gap: 6px;
             cursor: pointer;
+            min-height: 44px;
         }
 
         .action-btn:active {
@@ -411,13 +452,16 @@
             display: flex;
             align-items: center;
             gap: 12px;
-            padding: 14px;
+            padding: 16px;
             background: var(--bg-dark);
             border: 1px solid var(--border);
             border-radius: 10px;
             margin-bottom: 8px;
             cursor: pointer;
             transition: all 0.2s;
+            min-height: 44px;
+            user-select: none;
+            -webkit-user-select: none;
         }
 
         .item-card:active {
@@ -480,6 +524,11 @@
             color: #94a3b8;
         }
 
+        .item-icon.image {
+            background: rgba(236, 72, 153, 0.2);
+            color: #ec4899;
+        }
+
         .item-info {
             flex: 1;
             min-width: 0;
@@ -503,6 +552,11 @@
             padding: 8px;
             color: var(--text-secondary);
             cursor: pointer;
+            min-height: 44px;
+            min-width: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         /* Editor Area */
@@ -524,6 +578,8 @@
             flex-shrink: 0;
             gap: 8px;
             overflow-x: auto;
+            user-select: none;
+            -webkit-user-select: none;
         }
 
         .toolbar-left {
@@ -545,6 +601,7 @@
             gap: 6px;
             cursor: pointer;
             white-space: nowrap;
+            min-height: 44px;
         }
 
         .toolbar-btn:active {
@@ -564,7 +621,7 @@
             bottom: 0;
             left: 0;
             right: 0;
-            z-index: 2147483647; /* Max z-index */
+            z-index: 2147483647;
             background: var(--bg-panel);
             border-top: 1px solid var(--border);
             transition: transform 0.3s ease, bottom 0.3s ease;
@@ -629,7 +686,7 @@
             color: var(--bg-dark);
         }
 
-        /* KEYBOARD OPEN STATE - TOOLBAR UPAR AAYEGA */
+        /* KEYBOARD OPEN STATE */
         .keyboard-open .mobile-tools-container {
             bottom: var(--keyboard-height, 45vh);
             box-shadow: 0 -4px 20px rgba(0,0,0,0.5);
@@ -639,6 +696,7 @@
             flex: 1;
             overflow: hidden;
             position: relative;
+            touch-action: pan-y pinch-zoom;
         }
 
         /* Split Editor */
@@ -788,6 +846,52 @@
             margin-top: 4px;
         }
 
+        /* Stats Panel */
+        .stats-panel {
+            display: none;
+            padding: 12px;
+            background: var(--bg-dark);
+            border-radius: 8px;
+            margin-bottom: 12px;
+            border: 1px solid var(--border);
+        }
+
+        .stats-panel.active {
+            display: block;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .stat-item {
+            background: var(--bg-panel);
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--accent);
+        }
+
+        .stat-name {
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
         /* Bottom Nav (Mobile Only) */
         .bottom-nav {
             display: none;
@@ -798,6 +902,8 @@
             align-items: center;
             padding: 0 20px;
             transition: transform 0.3s ease;
+            user-select: none;
+            -webkit-user-select: none;
         }
 
         @media (max-width: 768px) {
@@ -820,7 +926,6 @@
                 transform: translateY(0);
             }
 
-            /* Keyboard open hone pe bottom nav hide karo */
             .keyboard-open .bottom-nav {
                 transform: translateY(100%);
             }
@@ -836,6 +941,8 @@
             padding: 8px 16px;
             border-radius: 12px;
             cursor: pointer;
+            min-height: 44px;
+            min-width: 44px;
         }
 
         .nav-item i {
@@ -959,6 +1066,39 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
+        /* Saving Indicator */
+        .saving-indicator {
+            position: fixed;
+            top: 70px;
+            right: 20px;
+            background: var(--success);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .saving-indicator.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .saving-indicator::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: white;
+            border-radius: 50%;
+            animation: pulse 1s infinite;
+        }
+
         /* Empty State */
         .empty-state {
             text-align: center;
@@ -987,9 +1127,10 @@
         .CodeMirror {
             height: 100%;
             font-family: 'SF Mono', Monaco, monospace;
-            font-size: 15px;
+            font-size: 16px;
             line-height: 1.6;
             background: var(--bg-dark) !important;
+            touch-action: pan-y pinch-zoom;
         }
 
         .CodeMirror-gutters {
@@ -1221,6 +1362,89 @@
             display: flex;
         }
 
+        /* Image Preview Modal */
+        .image-preview-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.95);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            padding: 20px;
+        }
+
+        .image-preview-modal.show {
+            display: flex;
+        }
+
+        .image-preview-modal img {
+            max-width: 100%;
+            max-height: 90vh;
+            border-radius: 8px;
+            object-fit: contain;
+        }
+
+        .image-preview-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 44px;
+            height: 44px;
+            background: var(--bg-panel);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .image-preview-actions {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 16px;
+        }
+
+        .image-preview-btn {
+            padding: 12px 24px;
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Offline Indicator */
+        .offline-indicator {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: var(--warning);
+            color: var(--bg-dark);
+            text-align: center;
+            padding: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            z-index: 10001;
+            transform: translateY(-100%);
+            transition: transform 0.3s ease;
+        }
+
+        .offline-indicator.show {
+            transform: translateY(0);
+        }
+
         /* GitHub Pages Fix - Visual Viewport */
         @supports (height: 100dvh) {
             #app {
@@ -1230,6 +1454,27 @@
     </style>
 </head>
 <body>
+
+    <!-- Offline Indicator -->
+    <div class="offline-indicator" id="offlineIndicator">
+        <i class="fas fa-wifi-slash"></i> You are offline - Working in cached mode
+    </div>
+
+    <!-- Image Preview Modal -->
+    <div class="image-preview-modal" id="imagePreviewModal">
+        <button class="image-preview-close" onclick="closeImagePreview()">
+            <i class="fas fa-times"></i>
+        </button>
+        <img id="previewImage" src="" alt="Preview">
+        <div class="image-preview-actions">
+            <button class="image-preview-btn" onclick="downloadPreviewImage()">
+                <i class="fas fa-download"></i> Download
+            </button>
+            <button class="image-preview-btn" onclick="sharePreviewImage()">
+                <i class="fas fa-share-alt"></i> Share
+            </button>
+        </div>
+    </div>
 
     <div id="splash">
         <div class="splash-content">
@@ -1267,6 +1512,9 @@
             </div>
             
             <div class="header-right">
+                <button class="btn btn-icon" onclick="toggleStats()" title="Code Statistics">
+                    <i class="fas fa-chart-bar"></i>
+                </button>
                 <button class="btn btn-icon" onclick="toggleZenMode()" title="Zen Mode">
                     <i class="fas fa-expand"></i>
                 </button>
@@ -1286,6 +1534,12 @@
 
         <div class="content">
             <aside class="sidebar" id="sidebar">
+                <!-- Pull to Refresh -->
+                <div class="pull-refresh" id="pullRefresh">
+                    <i class="fas fa-sync-alt"></i>
+                    <span>Pull to refresh</span>
+                </div>
+
                 <div class="sidebar-header">
                     <div class="sidebar-title">
                         <i class="fas fa-folder-open" style="color: var(--accent);"></i>
@@ -1296,7 +1550,7 @@
                     </button>
                 </div>
                 
-                <div class="sidebar-content">
+                <div class="sidebar-content" id="sidebarContent">
                     <div class="breadcrumb" id="breadcrumb">
                         <span class="breadcrumb-item" onclick="goToRoot()">Root</span>
                     </div>
@@ -1309,6 +1563,14 @@
                         <button class="action-btn" onclick="showNewFileModal()">
                             <i class="fas fa-file-plus"></i>
                             New File
+                        </button>
+                        <button class="action-btn" onclick="showShareModal()">
+                            <i class="fas fa-share-alt"></i>
+                            Share
+                        </button>
+                        <button class="action-btn" onclick="emergencyBackup()">
+                            <i class="fas fa-life-ring"></i>
+                            Backup
                         </button>
                     </div>
 
@@ -1343,6 +1605,31 @@
                         </div>
                     </div>
                     <span style="color: var(--text-secondary); font-size: 12px;" id="cursorPos">Ln 1, Col 1</span>
+                </div>
+
+                <!-- Stats Panel -->
+                <div class="stats-panel" id="statsPanel">
+                    <div style="font-weight: 600; margin-bottom: 8px;">
+                        <i class="fas fa-chart-bar" style="color: var(--accent);"></i> Code Statistics
+                    </div>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-number" id="statLines">0</div>
+                            <div class="stat-name">Lines</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number" id="statChars">0</div>
+                            <div class="stat-name">Characters</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number" id="statFunctions">0</div>
+                            <div class="stat-name">Functions</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number" id="statClasses">0</div>
+                            <div class="stat-name">Classes</div>
+                        </div>
+                    </div>
                 </div>
                 
                 <!-- Split View -->
@@ -1387,6 +1674,7 @@
                     <button class="tab active" onclick="switchTab('console')">Console</button>
                     <button class="tab" onclick="switchTab('help')">Help</button>
                     <button class="tab" onclick="switchTab('snippets')">Snippets</button>
+                    <button class="tab" onclick="switchTab('backup')">Backup</button>
                 </div>
                 <button class="toolbar-btn" onclick="clearConsole()">
                     <i class="fas fa-trash"></i>
@@ -1424,6 +1712,8 @@
                         <p>• Long press file to delete</p>
                         <p>• Use breadcrumb to go back</p>
                         <p>• Auto-save every 30 seconds</p>
+                        <p>• Pull down to refresh files</p>
+                        <p>• Emergency backup every minute</p>
                     </div>
                 </div>
 
@@ -1451,6 +1741,17 @@
                                 <code style="color: var(--accent);">ifmain</code> - Main guard
                             </div>
                         </div>
+                    </div>
+                </div>
+
+                <div id="backupView" style="display: none;">
+                    <div style="color: var(--text-secondary); line-height: 1.8; font-size: 13px;">
+                        <h4 style="color: var(--accent); margin-bottom: 10px;">Emergency Backups</h4>
+                        <p>Auto-saved every minute:</p>
+                        <div id="backupList" style="margin-top: 10px; display: flex; flex-direction: column; gap: 8px;"></div>
+                        <button class="toolbar-btn" onclick="clearAllBackups()" style="margin-top: 16px; width: 100%;">
+                            <i class="fas fa-trash"></i> Clear All Backups
+                        </button>
                     </div>
                 </div>
             </div>
@@ -1546,6 +1847,11 @@
         <i class="fas fa-microphone"></i>
     </button>
 
+    <!-- Saving Indicator -->
+    <div class="saving-indicator" id="savingIndicator">
+        <i class="fas fa-check"></i> Saved
+    </div>
+
     <!-- Modals -->
     <div class="modal-overlay" id="newFolderModal">
         <div class="modal-sheet">
@@ -1575,6 +1881,26 @@
         </div>
     </div>
 
+    <!-- Share Modal -->
+    <div class="modal-overlay" id="shareModal">
+        <div class="modal-sheet">
+            <div class="modal-title">
+                <i class="fas fa-share-alt" style="color: var(--accent);"></i>
+                Share Code
+            </div>
+            <div id="qrCodeContainer" style="text-align: center; margin-bottom: 20px;">
+                <img id="qrCodeImage" style="max-width: 200px; border-radius: 8px;" src="" alt="QR Code">
+            </div>
+            <input type="text" class="modal-input" id="shareUrlInput" readonly>
+            <div class="modal-actions">
+                <button class="modal-btn secondary" onclick="closeModal('shareModal')">Close</button>
+                <button class="modal-btn primary" onclick="copyShareUrl()">
+                    <i class="fas fa-copy"></i> Copy
+                </button>
+            </div>
+        </div>
+    </div>
+
     <div class="toast-container" id="toastContainer"></div>
 
     <!-- Scripts -->
@@ -1596,6 +1922,56 @@
     <script src="https://cdn.jsdelivr.net/npm/skulpt@1.2.0/dist/skulpt-stdlib.js"></script>
 
     <script>
+        // ==================== SERVICE WORKER FOR OFFLINE SUPPORT ====================
+        if ('serviceWorker' in navigator) {
+            const swCode = `
+                const CACHE_NAME = 'pyide-v1';
+                const urlsToCache = [
+                    '/',
+                    'https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css',
+                    'https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js',
+                    'https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/python/python.min.js',
+                    'https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/dracula.min.css',
+                    'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css'
+                ];
+
+                self.addEventListener('install', event => {
+                    event.waitUntil(
+                        caches.open(CACHE_NAME)
+                            .then(cache => cache.addAll(urlsToCache))
+                    );
+                });
+
+                self.addEventListener('fetch', event => {
+                    event.respondWith(
+                        caches.match(event.request)
+                            .then(response => {
+                                if (response) return response;
+                                return fetch(event.request);
+                            })
+                    );
+                });
+            `;
+            
+            const blob = new Blob([swCode], { type: 'application/javascript' });
+            const swUrl = URL.createObjectURL(blob);
+            
+            navigator.serviceWorker.register(swUrl)
+                .then(() => console.log('Service Worker registered'))
+                .catch(err => console.log('SW registration failed:', err));
+        }
+
+        // Offline detection
+        window.addEventListener('online', () => {
+            document.getElementById('offlineIndicator').classList.remove('show');
+            showToast('Back online!', 'success');
+        });
+
+        window.addEventListener('offline', () => {
+            document.getElementById('offlineIndicator').classList.add('show');
+            showToast('You are offline', 'warning');
+        });
+
         // ==================== FILE SYSTEM ====================
         class FileSystem {
             constructor() {
@@ -1857,7 +2233,7 @@
         let editor;
         let editor2;
         let isDirty = false;
-        let fontSize = 15;
+        let fontSize = 16;
         let isSplitView = false;
         let isZenMode = false;
 
@@ -1919,14 +2295,12 @@
                             const start = cursor.ch;
                             let end = start;
                             
-                            // Get current word
                             while (end < line.length && /[\w]/.test(line.charAt(end))) ++end;
                             while (start && /[\w]/.test(line.charAt(start - 1))) --start;
                             
                             const curWord = start !== end && line.slice(start, end);
                             const list = [];
                             
-                            // Add snippets
                             for (const [key, snippet] of Object.entries(snippets)) {
                                 if (!curWord || key.startsWith(curWord)) {
                                     list.push({
@@ -1937,7 +2311,6 @@
                                 }
                             }
                             
-                            // Add Python keywords
                             const keywords = ['and', 'as', 'assert', 'break', 'class', 'continue', 'def', 
                                 'del', 'elif', 'else', 'except', 'False', 'finally', 'for', 'from', 
                                 'global', 'if', 'import', 'in', 'is', 'lambda', 'None', 'nonlocal', 
@@ -1964,6 +2337,7 @@
             editor.on('change', () => {
                 isDirty = true;
                 document.getElementById('unsavedIndicator').classList.add('show');
+                updateStats();
                 if (isSplitView) {
                     editor2.setValue(editor.getValue());
                 }
@@ -1981,6 +2355,7 @@
                     isDirty = false;
                     document.getElementById('unsavedIndicator').classList.remove('show');
                     document.getElementById('currentFile').textContent = data.name;
+                    updateStats();
                     
                     if (isSplitView) {
                         editor2.setValue(data.content);
@@ -2008,39 +2383,87 @@
 
             // Setup keyboard detection
             setupKeyboardDetection();
+            
+            // Setup pull to refresh
+            setupPullToRefresh();
+            
+            // Setup gestures
+            setupGestures();
         }
 
-        // ==================== KEYBOARD DETECTION (GITHUB PAGES FIX) ====================
+        // ==================== PULL TO REFRESH ====================
+        function setupPullToRefresh() {
+            const sidebar = document.getElementById('sidebar');
+            const pullRefresh = document.getElementById('pullRefresh');
+            let startY = 0;
+            let currentY = 0;
+            let isPulling = false;
+
+            sidebar.addEventListener('touchstart', (e) => {
+                if (sidebar.scrollTop === 0) {
+                    startY = e.touches[0].clientY;
+                    isPulling = true;
+                }
+            }, { passive: true });
+
+            sidebar.addEventListener('touchmove', (e) => {
+                if (!isPulling) return;
+                
+                currentY = e.touches[0].clientY;
+                const diff = currentY - startY;
+                
+                if (diff > 0 && diff < 100) {
+                    pullRefresh.style.top = (diff - 60) + 'px';
+                    if (diff > 60) {
+                        pullRefresh.classList.add('visible');
+                    }
+                }
+            }, { passive: true });
+
+            sidebar.addEventListener('touchend', () => {
+                if (!isPulling) return;
+                
+                const diff = currentY - startY;
+                
+                if (diff > 60) {
+                    pullRefresh.classList.add('spinning');
+                    pullRefresh.innerHTML = '<i class="fas fa-sync-alt"></i><span>Refreshing...</span>';
+                    
+                    setTimeout(() => {
+                        renderItems();
+                        pullRefresh.classList.remove('spinning', 'visible');
+                        pullRefresh.style.top = '-60px';
+                        pullRefresh.innerHTML = '<i class="fas fa-sync-alt"></i><span>Pull to refresh</span>';
+                        showToast('Refreshed!', 'success');
+                    }, 1000);
+                } else {
+                    pullRefresh.classList.remove('visible');
+                    pullRefresh.style.top = '-60px';
+                }
+                
+                isPulling = false;
+            });
+        }
+
+        // ==================== KEYBOARD DETECTION ====================
         function setupKeyboardDetection() {
             const tools = document.getElementById('mobileToolsContainer');
-            let keyboardHeight = 0;
             
-            // Method 1: Visual Viewport API (Modern browsers)
             if (window.visualViewport) {
                 window.visualViewport.addEventListener('resize', () => {
                     const vv = window.visualViewport;
                     const heightDiff = window.innerHeight - vv.height;
                     
                     if (heightDiff > 100) {
-                        // Keyboard is open
-                        keyboardHeight = heightDiff;
                         document.body.classList.add('keyboard-open');
-                        
-                        // Set CSS variable for keyboard height
                         document.documentElement.style.setProperty('--keyboard-height', heightDiff + 'px');
-                        
-                        // Position toolbar above keyboard
                         tools.style.bottom = heightDiff + 'px';
-                        tools.style.transform = 'translateY(0)';
                     } else {
-                        // Keyboard is closed
                         document.body.classList.remove('keyboard-open');
                         tools.style.bottom = '0';
-                        tools.style.transform = 'translateY(0)';
                     }
                 });
             } else {
-                // Method 2: Fallback for old browsers
                 let originalHeight = window.innerHeight;
                 
                 window.addEventListener('resize', () => {
@@ -2057,7 +2480,6 @@
                 });
             }
             
-            // Method 3: Focus-based detection (Backup)
             editor.on('focus', () => {
                 setTimeout(() => {
                     if (window.visualViewport) {
@@ -2078,9 +2500,64 @@
                 }, 100);
             });
             
-            // Method 4: Click on editor container
             document.getElementById('editorContainer').addEventListener('click', () => {
                 editor.focus();
+            });
+        }
+
+        // ==================== GESTURES ====================
+        function setupGestures() {
+            let touchStartX = 0;
+            let touchStartY = 0;
+            let lastTap = 0;
+
+            document.addEventListener('touchstart', e => {
+                touchStartX = e.touches[0].clientX;
+                touchStartY = e.touches[0].clientY;
+            });
+
+            document.addEventListener('touchend', e => {
+                const diffX = e.changedTouches[0].clientX - touchStartX;
+                const diffY = e.changedTouches[0].clientY - touchStartY;
+                
+                // Swipe right from edge to open sidebar
+                if (diffX > 100 && Math.abs(diffY) < 50 && touchStartX < 50) {
+                    const sidebar = document.getElementById('sidebar');
+                    if (!sidebar.classList.contains('open')) {
+                        toggleSidebar();
+                    }
+                }
+                
+                // Swipe left to close sidebar
+                if (diffX < -100 && Math.abs(diffY) < 50) {
+                    const sidebar = document.getElementById('sidebar');
+                    if (sidebar.classList.contains('open')) {
+                        toggleSidebar();
+                    }
+                }
+                
+                // Double tap to select line
+                const currentTime = new Date().getTime();
+                const tapLength = currentTime - lastTap;
+                if (tapLength < 300 && tapLength > 0) {
+                    if (e.target.closest('.CodeMirror')) {
+                        const line = editor.lineAtHeight(e.changedTouches[0].clientY, 'window');
+                        editor.setSelection(
+                            {line: line, ch: 0}, 
+                            {line: line, ch: editor.getLine(line).length}
+                        );
+                        haptic('light');
+                    }
+                }
+                lastTap = currentTime;
+            });
+
+            // Two finger tap to undo
+            document.addEventListener('touchstart', (e) => {
+                if (e.touches.length === 2) {
+                    undo();
+                    haptic('medium');
+                }
             });
         }
 
@@ -2090,7 +2567,6 @@
             const doc = editor.getDoc();
             const cursor = doc.getCursor();
             
-            // Auto-close brackets logic
             const pairs = {
                 '(': ')',
                 '[': ']',
@@ -2100,18 +2576,14 @@
             };
             
             if (pairs[char]) {
-                // Check if next char is same as closing bracket
                 const nextChar = doc.getLine(cursor.line)[cursor.ch];
                 if (nextChar === pairs[char]) {
-                    // Just move cursor forward
                     doc.setCursor({ line: cursor.line, ch: cursor.ch + 1 });
                 } else {
                     doc.replaceSelection(char + pairs[char]);
-                    // Move cursor between brackets
                     doc.setCursor({ line: cursor.line, ch: cursor.ch + 1 });
                 }
             } else if (char === ')' || char === ']' || char === '}') {
-                // If next char is same closing bracket, just move cursor
                 const nextChar = doc.getLine(cursor.line)[cursor.ch];
                 if (nextChar === char) {
                     doc.setCursor({ line: cursor.line, ch: cursor.ch + 1 });
@@ -2123,42 +2595,44 @@
             }
             
             editor.focus();
-            haptic();
+            haptic('light');
         }
 
         function insertKeyword(keyword) {
             if (!editor) return;
             const doc = editor.getDoc();
             const cursor = doc.getCursor();
-            
-            // Add space after keyword if needed
             const nextChar = doc.getLine(cursor.line)[cursor.ch];
             const suffix = (nextChar === ' ' || nextChar === undefined) ? '' : ' ';
             
             doc.replaceSelection(keyword + suffix);
             editor.focus();
-            haptic();
+            haptic('light');
         }
 
         function moveCursor(where) {
             if (!editor) return;
-            const cursor = editor.getCursor();
-            const line = cursor.line;
-            
             if (where === 'home') {
                 editor.setCursor({ line: 0, ch: 0 });
             } else if (where === 'end') {
                 const lastLine = editor.lineCount() - 1;
                 editor.setCursor({ line: lastLine, ch: editor.getLine(lastLine).length });
             }
-            
             editor.focus();
         }
 
-        function haptic() {
-            if (navigator.vibrate) {
-                navigator.vibrate(10);
-            }
+        function haptic(type = 'light') {
+            if (!navigator.vibrate) return;
+            
+            const patterns = {
+                light: 10,
+                medium: 20,
+                heavy: 30,
+                success: [10, 50, 10],
+                error: [30, 100, 30]
+            };
+            
+            navigator.vibrate(patterns[type] || patterns.light);
         }
 
         // ==================== EDITOR FUNCTIONS ====================
@@ -2174,7 +2648,9 @@
             if (fs.saveCurrentFile(editor.getValue())) {
                 isDirty = false;
                 document.getElementById('unsavedIndicator').classList.remove('show');
+                showSavingIndicator();
                 showToast('Saved!', 'success');
+                haptic('success');
             }
         }
 
@@ -2264,7 +2740,6 @@
             const saved = fs.currentFile.content;
             const diffView = document.getElementById('diffView');
             
-            // Simple diff logic
             const currentLines = current.split('\n');
             const savedLines = saved.split('\n');
             let html = '';
@@ -2304,6 +2779,27 @@
             btn.classList.toggle('active');
         }
 
+        function toggleStats() {
+            const panel = document.getElementById('statsPanel');
+            panel.classList.toggle('active');
+            if (panel.classList.contains('active')) {
+                updateStats();
+            }
+        }
+
+        function updateStats() {
+            const code = editor.getValue();
+            const lines = code.split('\n').length;
+            const chars = code.length;
+            const functions = (code.match(/def /g) || []).length;
+            const classes = (code.match(/class /g) || []).length;
+            
+            document.getElementById('statLines').textContent = lines;
+            document.getElementById('statChars').textContent = chars;
+            document.getElementById('statFunctions').textContent = functions;
+            document.getElementById('statClasses').textContent = classes;
+        }
+
         function toggleZenMode() {
             isZenMode = !isZenMode;
             document.body.classList.toggle('zen-mode');
@@ -2312,11 +2808,16 @@
         function insertSnippet(name) {
             const snippet = snippets[name];
             if (snippet && editor) {
-                const cursor = editor.getCursor();
                 editor.replaceSelection(snippet.text);
                 editor.focus();
                 showToast(`Inserted ${name}`, 'success');
             }
+        }
+
+        function showSavingIndicator() {
+            const indicator = document.getElementById('savingIndicator');
+            indicator.classList.add('show');
+            setTimeout(() => indicator.classList.remove('show'), 2000);
         }
 
         // Auto-save
@@ -2325,8 +2826,149 @@
                 fs.saveCurrentFile(editor.getValue());
                 isDirty = false;
                 document.getElementById('unsavedIndicator').classList.remove('show');
+                showSavingIndicator();
+                haptic('light');
             }
         }, 30000);
+
+        // ==================== EMERGENCY BACKUP ====================
+        function emergencyBackup() {
+            const code = editor.getValue();
+            const timestamp = Date.now();
+            const fileName = fs.currentFile ? fs.currentFile.name : 'untitled.py';
+            
+            // Save to localStorage with timestamp
+            const backupKey = `pyide_backup_${timestamp}`;
+            const backupData = {
+                code: code,
+                fileName: fileName,
+                timestamp: timestamp,
+                date: new Date().toLocaleString()
+            };
+            
+            try {
+                localStorage.setItem(backupKey, JSON.stringify(backupData));
+                
+                // Also save to sessionStorage as current
+                sessionStorage.setItem('pyide_current', JSON.stringify(backupData));
+                
+                // Keep only last 10 backups
+                cleanupOldBackups();
+                
+                showToast('Emergency backup saved!', 'success');
+                updateBackupList();
+                haptic('success');
+            } catch (e) {
+                showToast('Backup failed - storage full', 'error');
+            }
+        }
+
+        function cleanupOldBackups() {
+            const backups = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && key.startsWith('pyide_backup_')) {
+                    backups.push(key);
+                }
+            }
+            
+            // Sort by timestamp (newest first)
+            backups.sort().reverse();
+            
+            // Remove old backups (keep last 10)
+            if (backups.length > 10) {
+                backups.slice(10).forEach(key => {
+                    localStorage.removeItem(key);
+                });
+            }
+        }
+
+        function updateBackupList() {
+            const list = document.getElementById('backupList');
+            if (!list) return;
+            
+            const backups = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && key.startsWith('pyide_backup_')) {
+                    try {
+                        const data = JSON.parse(localStorage.getItem(key));
+                        backups.push({ key, ...data });
+                    } catch (e) {}
+                }
+            }
+            
+            backups.sort((a, b) => b.timestamp - a.timestamp);
+            
+            if (backups.length === 0) {
+                list.innerHTML = '<div style="color: var(--text-secondary); text-align: center; padding: 20px;">No backups yet</div>';
+                return;
+            }
+            
+            list.innerHTML = backups.map(backup => `
+                <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px; background: var(--bg-dark); border-radius: 6px;">
+                    <div style="flex: 1; min-width: 0;">
+                        <div style="font-weight: 600; font-size: 13px;">${backup.fileName}</div>
+                        <div style="font-size: 11px; color: var(--text-secondary);">${backup.date}</div>
+                    </div>
+                    <button onclick="restoreBackup('${backup.key}')" class="toolbar-btn" style="margin-left: 8px;">
+                        <i class="fas fa-undo"></i> Restore
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function restoreBackup(key) {
+            try {
+                const data = JSON.parse(localStorage.getItem(key));
+                if (data && data.code) {
+                    if (confirm(`Restore backup from ${data.date}?`)) {
+                        editor.setValue(data.code);
+                        showToast('Backup restored!', 'success');
+                        haptic('success');
+                    }
+                }
+            } catch (e) {
+                showToast('Failed to restore backup', 'error');
+            }
+        }
+
+        function clearAllBackups() {
+            if (!confirm('Delete all emergency backups?')) return;
+            
+            const keys = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && key.startsWith('pyide_backup_')) {
+                    keys.push(key);
+                }
+            }
+            
+            keys.forEach(key => localStorage.removeItem(key));
+            updateBackupList();
+            showToast('All backups cleared', 'info');
+        }
+
+        // Auto backup every minute
+        setInterval(emergencyBackup, 60000);
+
+        // Check for emergency backup on load
+        window.addEventListener('load', () => {
+            const emergency = sessionStorage.getItem('pyide_current');
+            if (emergency) {
+                try {
+                    const data = JSON.parse(emergency);
+                    if (data.code && data.code !== editor.getValue()) {
+                        setTimeout(() => {
+                            if (confirm(`Unsaved backup found from ${data.date}! Restore?`)) {
+                                editor.setValue(data.code);
+                                showToast('Emergency backup restored!', 'success');
+                            }
+                        }, 1000);
+                    }
+                } catch (e) {}
+            }
+        });
 
         // ==================== PYTHON RUNNER ====================
         function initPython() {
@@ -2356,13 +2998,11 @@
                 return;
             }
 
-            // Show output
             document.getElementById('outputPanel').classList.add('open');
             switchTab('console');
             
             appendConsole('▶️ Running...', 'info');
 
-            // Profile if enabled
             const startTime = performance.now();
             const startMemory = performance.memory ? performance.memory.usedJSHeapSize : 0;
 
@@ -2371,7 +3011,6 @@
                     return Sk.importMainWithBody("<stdin>", false, code, true);
                 });
                 
-                // Calculate metrics
                 const execTime = performance.now() - startTime;
                 const memUsed = performance.memory ? (performance.memory.usedJSHeapSize - startMemory) / 1024 / 1024 : 0;
                 
@@ -2384,7 +3023,6 @@
                 if (execTime > 1000) rating = '🔴 Slow';
                 document.getElementById('speedRating').textContent = rating;
                 
-                // Tips
                 const tips = document.getElementById('profilerTips');
                 if (execTime > 1000) {
                     tips.innerHTML = '⚠️ Slow code detected! Tips:<br>• Use list comprehensions<br>• Avoid nested loops<br>• Use generators';
@@ -2393,12 +3031,14 @@
                 }
                 
                 appendConsole('✅ Done!', 'success');
+                haptic('success');
             } catch (err) {
                 let msg = err.toString();
                 if (msg.includes('TimeLimitError')) {
                     msg = '⏱️ Infinite loop detected!';
                 }
                 appendConsole('❌ ' + msg, 'error');
+                haptic('error');
             }
         }
 
@@ -2486,7 +3126,13 @@
                 'css': 'css',
                 'js': 'js',
                 'json': 'json',
-                'txt': 'txt'
+                'txt': 'txt',
+                'jpg': 'image',
+                'jpeg': 'image',
+                'png': 'image',
+                'gif': 'image',
+                'webp': 'image',
+                'svg': 'image'
             };
             
             return iconMap[ext] || 'file';
@@ -2521,7 +3167,15 @@
             if (type === 'folder') {
                 fs.navigateTo(name);
             } else {
-                fs.openFile(name);
+                // Check if image
+                const ext = name.split('.').pop().toLowerCase();
+                const imageExts = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'];
+                
+                if (imageExts.includes(ext)) {
+                    previewImage(name);
+                } else {
+                    fs.openFile(name);
+                }
             }
         }
 
@@ -2536,12 +3190,66 @@
 
         function handleItemLongPress(e, name) {
             e.preventDefault();
-            deleteItem(name);
+            
+            const item = fs.getCurrentFolder().children[name];
+            if (!item) return;
+            
+            const menu = document.createElement('div');
+            menu.style.cssText = `
+                position: fixed;
+                left: ${Math.max(10, e.touches[0].clientX - 100)}px;
+                top: ${Math.max(10, e.touches[0].clientY)}px;
+                background: var(--bg-panel);
+                border: 1px solid var(--border);
+                border-radius: 12px;
+                padding: 8px;
+                z-index: 10000;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+                animation: slideUp 0.2s ease;
+                min-width: 200px;
+            `;
+            
+            menu.innerHTML = `
+                <div style="padding: 12px 16px; border-bottom: 1px solid var(--border); font-weight: 600;">
+                    ${name}
+                </div>
+                ${item.type === 'file' ? `
+                    <button onclick="fs.openFile('${name}'); this.parentElement.remove()" 
+                            style="display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px; background: none; border: none; color: var(--text-primary);">
+                        <i class="fas fa-edit"></i> Open
+                    </button>
+                    <button onclick="fs.downloadCurrentFile(); this.parentElement.remove()" 
+                            style="display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px; background: none; border: none; color: var(--text-primary);">
+                        <i class="fas fa-download"></i> Download
+                    </button>
+                ` : ''}
+                <button onclick="navigator.clipboard.writeText('${name}'); showToast('Copied!', 'success'); this.parentElement.remove()" 
+                        style="display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px; background: none; border: none; color: var(--text-primary);">
+                    <i class="fas fa-copy"></i> Copy Name
+                </button>
+                <button onclick="deleteItem('${name}'); this.parentElement.remove()" 
+                        style="display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px; background: none; border: none; color: var(--error);">
+                    <i class="fas fa-trash"></i> Delete
+                </button>
+            `;
+            
+            document.body.appendChild(menu);
+            haptic('medium');
+            
+            setTimeout(() => {
+                document.addEventListener('click', function removeMenu() {
+                    menu.remove();
+                    document.removeEventListener('click', removeMenu);
+                });
+            }, 100);
         }
 
         function showItemMenu(e, name) {
             e.stopPropagation();
-            deleteItem(name);
+            handleItemLongPress({ 
+                preventDefault: () => {},
+                touches: [{ clientX: e.clientX, clientY: e.clientY }]
+            }, name);
         }
 
         function deleteItem(name) {
@@ -2550,6 +3258,103 @@
                 showToast('Deleted', 'info');
             }
         }
+
+        // ==================== IMAGE PREVIEW ====================
+        function previewImage(filename) {
+            const file = fs.getCurrentFolder().children[filename];
+            if (!file) return;
+            
+            // For base64 images stored in content
+            const modal = document.getElementById('imagePreviewModal');
+            const img = document.getElementById('previewImage');
+            
+            if (file.content.startsWith('data:image')) {
+                img.src = file.content;
+            } else {
+                // Try to generate placeholder or show error
+                showToast('Image preview not available for this file', 'error');
+                return;
+            }
+            
+            modal.classList.add('show');
+            haptic('light');
+        }
+
+        function closeImagePreview() {
+            document.getElementById('imagePreviewModal').classList.remove('show');
+        }
+
+        function downloadPreviewImage() {
+            const img = document.getElementById('previewImage');
+            const a = document.createElement('a');
+            a.href = img.src;
+            a.download = 'image.png';
+            a.click();
+        }
+
+        function sharePreviewImage() {
+            const img = document.getElementById('previewImage');
+            if (navigator.share) {
+                fetch(img.src)
+                    .then(res => res.blob())
+                    .then(blob => {
+                        const file = new File([blob], 'image.png', { type: 'image/png' });
+                        navigator.share({
+                            files: [file],
+                            title: 'Shared from PyIDE Pro'
+                        });
+                    });
+            } else {
+                showToast('Sharing not supported', 'error');
+            }
+        }
+
+        // ==================== SHARING & QR ====================
+        function showShareModal() {
+            const code = editor.getValue();
+            if (!code.trim()) {
+                showToast('No code to share!', 'error');
+                return;
+            }
+            
+            const encoded = btoa(encodeURIComponent(code));
+            const url = `${window.location.origin}${window.location.pathname}?code=${encoded}`;
+            
+            // Generate QR code using API
+            const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(url)}`;
+            
+            document.getElementById('qrCodeImage').src = qrUrl;
+            document.getElementById('shareUrlInput').value = url;
+            
+            document.getElementById('shareModal').classList.add('show');
+        }
+
+        function copyShareUrl() {
+            const input = document.getElementById('shareUrlInput');
+            input.select();
+            navigator.clipboard.writeText(input.value);
+            showToast('URL copied!', 'success');
+            haptic('success');
+        }
+
+        // Check for shared code in URL
+        window.addEventListener('load', () => {
+            const params = new URLSearchParams(window.location.search);
+            const sharedCode = params.get('code');
+            if (sharedCode) {
+                try {
+                    const code = decodeURIComponent(atob(sharedCode));
+                    setTimeout(() => {
+                        if (confirm('Open shared code?')) {
+                            editor.setValue(code);
+                            showToast('Shared code loaded!', 'success');
+                        }
+                    }, 1000);
+                } catch (e) {
+                    console.error('Failed to load shared code');
+                }
+            }
+        });
 
         // Modals
         function showNewFolderModal() {
@@ -2579,6 +3384,7 @@
                 input.value = '';
                 closeModal('newFolderModal');
                 showToast('Folder created!', 'success');
+                haptic('success');
             }
         }
 
@@ -2597,6 +3403,7 @@
                 input.value = '';
                 closeModal('newFileModal');
                 showToast('File created!', 'success');
+                haptic('success');
             }
         }
 
@@ -2615,6 +3422,11 @@
             document.getElementById('consoleView').style.display = tab === 'console' ? 'block' : 'none';
             document.getElementById('helpView').style.display = tab === 'help' ? 'block' : 'none';
             document.getElementById('snippetsView').style.display = tab === 'snippets' ? 'block' : 'none';
+            document.getElementById('backupView').style.display = tab === 'backup' ? 'block' : 'none';
+            
+            if (tab === 'backup') {
+                updateBackupList();
+            }
         }
 
         function toggleOutput() {
@@ -2648,7 +3460,6 @@
             const icon = document.getElementById('themeIcon');
             icon.className = newTheme === 'light' ? 'fas fa-moon' : 'fas fa-sun';
             
-            // Update CodeMirror theme
             if (editor) {
                 editor.setOption('theme', newTheme === 'light' ? 'default' : 'dracula');
             }
@@ -2659,7 +3470,6 @@
             localStorage.setItem('pyide_theme', newTheme);
         }
 
-        // Load saved theme
         function loadTheme() {
             const savedTheme = localStorage.getItem('pyide_theme') || 'dark';
             document.documentElement.setAttribute('data-theme', savedTheme);
@@ -2708,36 +3518,6 @@
             }
         }
 
-        // Swipe Gestures
-        let touchStartX = 0;
-        let touchStartY = 0;
-
-        document.addEventListener('touchstart', e => {
-            touchStartX = e.touches[0].clientX;
-            touchStartY = e.touches[0].clientY;
-        });
-
-        document.addEventListener('touchend', e => {
-            const diffX = e.changedTouches[0].clientX - touchStartX;
-            const diffY = e.changedTouches[0].clientY - touchStartY;
-            
-            // Swipe right from edge to open sidebar
-            if (diffX > 100 && Math.abs(diffY) < 50 && touchStartX < 50) {
-                const sidebar = document.getElementById('sidebar');
-                if (!sidebar.classList.contains('open')) {
-                    toggleSidebar();
-                }
-            }
-            
-            // Swipe left to close sidebar
-            if (diffX < -100 && Math.abs(diffY) < 50) {
-                const sidebar = document.getElementById('sidebar');
-                if (sidebar.classList.contains('open')) {
-                    toggleSidebar();
-                }
-            }
-        });
-
         // Toast
         function showToast(message, type = 'info') {
             const container = document.getElementById('toastContainer');
@@ -2759,27 +3539,25 @@
 
         // ==================== INITIALIZATION ====================
         document.addEventListener('DOMContentLoaded', () => {
-            // Load theme first
             loadTheme();
             
-            // Hide splash after load
             setTimeout(() => {
                 document.getElementById('splash').style.opacity = '0';
                 setTimeout(() => {
                     document.getElementById('splash').style.display = 'none';
                     document.getElementById('app').classList.add('active');
                     
-                    // Initialize
                     initEditor();
                     initPython();
                     renderItems();
+                    updateBackupList();
                 }, 500);
             }, 2500);
 
-            // Keyboard shortcuts
             document.addEventListener('keydown', (e) => {
                 if (e.key === 'Escape') {
                     document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('show'));
+                    closeImagePreview();
                 }
             });
         });
